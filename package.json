@@ -2,8 +2,7 @@
   "name": "contact",
   "version": "0.0.0",
   "private": true,
-  "scripts": {
-  },
+  "scripts": {},
   "dependencies": {
     "body-parser": "~1.17.1",
     "cors": "^2.8.4",

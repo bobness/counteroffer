@@ -3,19 +3,22 @@ const path = require('path');
 const logger = require('morgan');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-
 const index = require('./routes/index');
-
 const app = express();
+const http = require('http');
 
-app.set('port', process.env.PORT || 3000);
-
+app.use(express.static('public'));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cors());
 
 app.use('/contact', index);
+
+const server = http.createServer(app);
+server.listen(process.env.PORT || 80);
+server.on('listening', () => {
+	console.log('Listening on ', server.address());
+});
 
 app.use(function(err, req, res, next) {
   console.log('error! ' + err);
