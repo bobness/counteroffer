@@ -7,7 +7,8 @@ const index = require('./routes/index');
 const app = express();
 const http = require('http');
 
-app.use(express.static('public'));
+app.use('/', (req, res, next) => next(), express.static('public/bob.stark'));
+app.use('/bob.stark', (req, res, next) => next(), express.static('public/bob.stark'));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));

@@ -1,0 +1,15 @@
+<div>
+  <h1>
+    {{ data.title }}
+  </h1>
+  <h2>
+  	{{ data.company }}
+  </h2>
+	{{ data.start }} - {{ data.end }}
+	<div ng-show="data.description" class="description">
+    {{ data.description }}
+	</div>
+	<ul class="tag-list">
+  	<li class="tag-item" ng-repeat="tag in data.tags track by $index">{{ tag }}</li>
+  </ul>
+</div>
