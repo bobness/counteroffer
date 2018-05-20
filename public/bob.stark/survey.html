@@ -11,11 +11,13 @@
       </div>
     </div>
     
-    <div ng-show="busy">
-      Sending email...
-      <img src="loading.gif" />
+    <div ng-show="state === 'busy'">
+      Sending email... <img src="loading.gif" />
     </div>
-    <div ng-hide="busy" class="panel question" ng-repeat="question in questions" ng-class="{'panel-primary': !question.resuired || question.value === null, 'panel-success': question.required && question.value, 'panel-danger': question.required && question.value === ''}">
+    <div ng-show="state === 'error'" class="panel-danger">
+      Sorry, there was an error submitting this survey. Please notify Bob.
+    </div>
+    <div ng-show="state === 'ok'" class="panel question" ng-repeat="question in questions" ng-class="{'panel-primary': !question.resuired || question.value === null, 'panel-success': question.required && question.value, 'panel-danger': question.required && question.value === ''}">
       <div class="panel-heading">
         {{ question.text }} {{ question.required ? '*' : '' }}
       </div>

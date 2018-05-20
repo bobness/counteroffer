@@ -65,7 +65,9 @@ angular.module('counteroffer', [])
     };
     
     $scope.sendEmail = function(obj) {
-      return $http.post('/email', obj.questions);
+      return $http.post('/email', obj.questions).then(function() {
+        $scope.hideSurvey();
+      });
     };
     
   }])
@@ -157,6 +159,7 @@ angular.module('counteroffer', [])
         submitFunc: '&'
       },
       link: function(scope, elem, attrs) {
+        scope.state = 'ok';
         scope.progress = function() {
           var requiredQuestions = scope.questions.filter(function(question) { return question.required; });
           var denominator = requiredQuestions.length;
@@ -189,7 +192,7 @@ angular.module('counteroffer', [])
         };
         
         scope.submit = function() {
-          scope.busy = true;
+          scope.state = 'busy';
           var questions = scope.questions.filter(function(question) {
             if (question.type === 'skills') {
               question.value = scope.tags
@@ -201,8 +204,13 @@ angular.module('counteroffer', [])
             }
             return !!question.value;
           });
-          return scope.submitFunc({questions: questions}).finally(function() {
-            scope.busy = false;
+          return scope.submitFunc({questions: questions}).then(function() {
+            scope.state = 'ok';
+            scope.questions.forEach(function(question) {
+              question.value = null;
+            });
+          }).catch(function(err) {
+            scope.state = 'error';
           });
         };
         

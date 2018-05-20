@@ -9,8 +9,13 @@ router.get('/', function(req, res, next) {
 
 router.post('/', function(req, res, next) {
   var transporter = nodemailer.createTransport(smtpTransport({
-    host: 'localhost',
-    port: 25
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // use SSL
+    auth: {
+        user: 'bob@bobstark.me',
+        pass: 'i0t4*375'
+    }
   }));
   
   const data = req.body;
@@ -19,7 +24,12 @@ router.post('/', function(req, res, next) {
     from: 'Counteroffer <no-reply@counteroffer.me>',
     to: 'bob@bobstark.me',
     subject: 'Counteroffer Contact',
-    text: Object.keys(data).map((key) => { return `${key}: ${data[key]}`; }).join('\n')
+    text: data.map((question) => { 
+      if (Array.isArray(question.value)) {
+        return `${question.text}\n` + question.value.map((val) => `- ${val}`).join('\n');
+      }
+      return `${question.text} - ${question.value}`; 
+    }).join('\n')
   };
   
   transporter.sendMail(mailOptions, function(error, info) {
