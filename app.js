@@ -13,7 +13,7 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-app.use('/contact', index);
+app.use('/email', index);
 
 const server = http.createServer(app);
 server.listen(process.env.PORT || 80);

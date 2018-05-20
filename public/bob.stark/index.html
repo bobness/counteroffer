@@ -8,7 +8,9 @@
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
     
-    <link rel="stylesheet" href="style.css"/>
+    <link rel="stylesheet" href="style.css" />
+    
+    <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon" />
     
     <title>Bob Stark's Portfolio</title>
     
@@ -57,13 +59,10 @@
       <experience ng-repeat="exp in experiences | filter:expFilter | orderBy : parseDate : true" data="exp"></experience>
     </div>
     
-<!--
     <survey ng-if="surveyVisible()"
+      questions="questions"
       tag-counts="tagCounts"
-      submit-func="sendEmail(email)">
+      submit-func="sendEmail({questions: questions})">
     </survey>
--->
-
-  <script>(function(t,e,s,n){var o,a,c;t.SMCX=t.SMCX||[],e.getElementById(n)||(o=e.getElementsByTagName(s),a=o[o.length-1],c=e.createElement(s),c.type="text/javascript",c.async=!0,c.id=n,c.src=["https:"===location.protocol?"https://":"http://","widget.surveymonkey.com/collect/website/js/tRaiETqnLgj758hTBazgd0QPzSj0UQWRa3qGQLRck3OeLIWFgzEaKhi9VMWqOUZ_2B.js"].join(""),a.parentNode.insertBefore(c,a))})(window,document,"script","smcx-sdk");</script>
   </body>
 </html>

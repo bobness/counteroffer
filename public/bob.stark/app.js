@@ -5,6 +5,7 @@ angular.module('counteroffer', [])
       $scope.experiences = json.experiences;
       $scope.tagCounts = countTags(json.experiences, json.tags);
       $scope.facts = json.facts;
+      $scope.questions = json.questions;
     });
     
     var countTags = function(experiences, tags) {
@@ -53,32 +54,19 @@ angular.module('counteroffer', [])
     $scope.selectedTags = [];
     $scope.showSurvey = function() {
       $location.hash('contact');
-      showHideSurveyMonkey();
     };
     
     $scope.hideSurvey = function() {
       $location.hash('');
-      showHideSurveyMonkey();
     };
     
     $scope.surveyVisible = function() {
       return $location.hash() === 'contact';
     };
     
-    var showHideSurveyMonkey = function() {
-      if ($scope.surveyVisible()) {
-        $('.smcx-widget').show();
-      } else {
-        $('.smcx-widget').hide();
-      }
+    $scope.sendEmail = function(obj) {
+      return $http.post('/email', obj.questions);
     };
-    
-    $(window).on('load', showHideSurveyMonkey);
-    
-/*
-    $scope.sendEmail = function(emailObject) {
-    };
-*/
     
   }])
   .directive('experience', [function() {
@@ -160,14 +148,23 @@ angular.module('counteroffer', [])
       }
     };
   }])
-  /*.directive('survey', function() {
+  .directive('survey', function() {
     return {
       templateUrl: 'survey.html',
       scope: {
         tagCounts: '<',
+        questions: '<',
         submitFunc: '&'
       },
       link: function(scope, elem, attrs) {
+        scope.progress = function() {
+          var requiredQuestions = scope.questions.filter(function(question) { return question.required; });
+          var denominator = requiredQuestions.length;
+          var numerator = requiredQuestions.filter(function(question) { return !!question.value; }).length;
+          
+          return Math.round((numerator/denominator)*100);
+        };
+        
         scope.$watch('tagCounts', function() {
           if (scope.tagCounts) {
             scope.tags = scope.tagCounts.map(function(tag) {
@@ -176,61 +173,39 @@ angular.module('counteroffer', [])
                 selected: false
               };
             });
-            scope.otherTag = {
-              name: 'Other',
-              selected: false,
-              text: ''
-            };
           }
         });
-  
-        scope.progress = function() {
-          var answered = Object.keys(scope.answered);
-          var denominator = answered.length;
-          var numerator = answered.filter(function(questionName) { return scope.answered[questionName]; }).length;
-          
-          return Math.round((numerator/denominator)*100);
-        };
         
-        scope.answered = {
-          salary: null,
-          comments: null,
-          company: null,
-          tags: null,
-          email: null
-        };
-        
-        scope.answer = function(questionName, value) {
-          scope.answered[questionName] = !!value;
-        };
-  
         scope.tagsSelected = null;
         
         scope.selectTag = function(tag) {
           if (tag.selected) {
             scope.tagsSelected = true;
           } else {
-            var tags = scope.tags.concat(scope.otherTag);
-            scope.tagsSelected = tags.reduce(function(anySelected, tag) {
+            scope.tagsSelected = scope.tags.reduce(function(anySelected, tag) {
               return tag.selected ||  anySelected;
             }, false);
           }
-          
         };
         
         scope.submit = function() {
-          var email = {
-            email: scope.email,
-            selectedtags: scope.tags
-              .filter(function(tag) { return tag.selected; })
-              .map(function(tag) { return tag.name; }),
-            salary: scope.salary,
-            company: scope.company,
-            comments: scope.comments
-          };
-          return scope.submitFunc({email: email}); // TODO: put a spinner while it's sending
+          scope.busy = true;
+          var questions = scope.questions.filter(function(question) {
+            if (question.type === 'skills') {
+              question.value = scope.tags
+                .filter(function(tag) { return tag.selected; })
+                .map(function(tag) { return tag.name; });
+            }
+            if (question.type === 'textarea' && question.value) {
+              question.value = question.value.split('\n');
+            }
+            return !!question.value;
+          });
+          return scope.submitFunc({questions: questions}).finally(function() {
+            scope.busy = false;
+          });
         };
         
       }
     };
-  });*/
+  });
