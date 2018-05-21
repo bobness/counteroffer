@@ -179,16 +179,34 @@ angular.module('counteroffer', [])
           }
         });
         
-        scope.tagsSelected = null;
-        
-        scope.selectTag = function(tag) {
+        scope.selectTag = function(question, tag) {
           if (tag.selected) {
-            scope.tagsSelected = true;
+            if (!Array.isArray(question.value)) {
+              question.value = [];
+            }
+            question.value.push(tag.name);
           } else {
-            scope.tagsSelected = scope.tags.reduce(function(anySelected, tag) {
-              return tag.selected ||  anySelected;
-            }, false);
+            question.value = scope.tags.reduce(function(tagNames, tag) {
+              return tag.selected ? tagNames.concat(tag.name) : tagNames;
+            }, []);
           }
+        };
+        
+        scope.getPanelClass = function(question) {
+          if (question.required) {
+            if (Array.isArray(question.value)) {
+              if (question.value.length > 0) {
+                return 'panel-success';
+              }
+              return 'panel-danger';
+            }
+            if (question.value) {
+              return 'panel-success';
+            } else if (question.value === '') {
+              return 'panel-danger';
+            }
+          }
+          return 'panel-primary';
         };
         
         scope.submit = function() {

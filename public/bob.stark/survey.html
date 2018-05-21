@@ -2,7 +2,7 @@
   <div class="panel-heading">Contact Bob</div>
   <div class="panel-body">
     
-    <p>If you would like to talk with Bob about a job opportunity, please fill out the following form. </p>
+    <p>To help focus an initial phone call, please fill out the following details about the relevant job opportunities. </p>
     
     <p><strong>Progress:</strong></p>
     <div class="progress">
@@ -17,7 +17,7 @@
     <div ng-show="state === 'error'" class="panel-danger">
       Sorry, there was an error submitting this survey. Please notify Bob.
     </div>
-    <div ng-show="state === 'ok'" class="panel question" ng-repeat="question in questions" ng-class="{'panel-primary': !question.resuired || question.value === null, 'panel-success': question.required && question.value, 'panel-danger': question.required && question.value === ''}">
+    <div ng-show="state === 'ok'" class="panel question" ng-repeat="question in questions" ng-class="getPanelClass(question)">
       <div class="panel-heading">
         {{ question.text }} {{ question.required ? '*' : '' }}
       </div>
@@ -28,7 +28,7 @@
         <div ng-if="question.type === 'skills'">
           <div ng-repeat="tag in tags track by $index">
             <label>
-              <input type="checkbox" ng-model="tag.selected" ng-change="selectTag(tag)">
+              <input type="checkbox" ng-model="tag.selected" ng-change="selectTag(question, tag)">
               {{ tag.name }}
             </label>
           </div>
