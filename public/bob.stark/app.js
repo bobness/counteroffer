@@ -163,7 +163,12 @@ angular.module('counteroffer', [])
         scope.progress = function() {
           var requiredQuestions = scope.questions.filter(function(question) { return question.required; });
           var denominator = requiredQuestions.length;
-          var numerator = requiredQuestions.filter(function(question) { return !!question.value; }).length;
+          var numerator = requiredQuestions.filter(function(question) { 
+            if (Array.isArray(question.value)) {
+              return question.value.length > 0;
+            }
+            return question.value; 
+          }).length;
           
           return Math.round((numerator/denominator)*100);
         };
