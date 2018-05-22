@@ -62,7 +62,7 @@
     <survey ng-if="surveyVisible()"
       questions="questions"
       tag-counts="tagCounts"
-      submit-func="sendEmail({questions: questions})">
+      submit-func="sendEmail({emailQuestion: emailQuestion, jobs: jobs})">
     </survey>
   </body>
 </html>

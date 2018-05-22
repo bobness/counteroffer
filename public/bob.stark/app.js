@@ -65,7 +65,9 @@ angular.module('counteroffer', [])
     };
     
     $scope.sendEmail = function(obj) {
-      return $http.post('/email', obj.questions).then(function() {
+      var emailQuestion = obj.emailQuestion,
+          jobs = obj.jobs;
+      return $http.post('/email', [emailQuestion, jobs]).then(function() {
         $scope.hideSurvey();
       });
     };
@@ -160,8 +162,38 @@ angular.module('counteroffer', [])
       },
       link: function(scope, elem, attrs) {
         scope.state = 'ok';
+        scope.emailQuestion = {
+          required: true,
+          value: null
+        };
+        scope.jobs = [];
+        
+        var copyQuestion = function(question) {
+          var obj = {};
+          Object.keys(question).forEach(function(key) {
+            obj[key] = question[key];
+          });
+          return obj;
+        };
+        
+        scope.addJob = function() {
+          scope.jobs.push({questions: scope.questions.map(function(question) {
+            return copyQuestion(question);
+          })});
+        };
+        
+        scope.deleteJob = function(index) {
+          scope.jobs.splice(index, 1);
+        };
+        
+        scope.addJob(); // 1 minimum
+        
         scope.progress = function() {
-          var requiredQuestions = scope.questions.filter(function(question) { return question.required; });
+          var questions = [].concat(scope.emailQuestion);
+          questions = scope.jobs.reduce(function(questions, job) {
+            return questions.concat(job.questions);
+          }, questions);
+          var requiredQuestions = questions.filter(function(question) { return question.required; });
           var denominator = requiredQuestions.length;
           var numerator = requiredQuestions.filter(function(question) { 
             if (Array.isArray(question.value)) {
@@ -173,15 +205,22 @@ angular.module('counteroffer', [])
           return Math.round((numerator/denominator)*100);
         };
         
-        scope.$watch('tagCounts', function() {
-          if (scope.tagCounts) {
-            scope.tags = scope.tagCounts.map(function(tag) {
+        scope.$watchCollection('jobs', function(newVal, oldVal) {
+          // add tags to a new job - don't break old jobs
+          var newJobs;
+          if (oldVal.length === 1 && newVal.length === 1) {
+            newJobs = newVal;
+          } else if (newVal.length > oldVal.length) {
+            newJobs = newVal.filter(function(job) { return oldVal.indexOf(job) === -1; });
+          }
+          newJobs.forEach(function(job) {
+            job.tags = scope.tagCounts.map(function(tag) {
               return {
                 name: tag.name,
                 selected: false
               };
             });
-          }
+          });
         });
         
         scope.selectTag = function(question, tag) {
@@ -216,18 +255,7 @@ angular.module('counteroffer', [])
         
         scope.submit = function() {
           scope.state = 'busy';
-          var questions = scope.questions.filter(function(question) {
-            if (question.type === 'skills') {
-              question.value = scope.tags
-                .filter(function(tag) { return tag.selected; })
-                .map(function(tag) { return tag.name; });
-            }
-            if (question.type === 'textarea' && question.value) {
-              question.value = question.value.split('\n');
-            }
-            return !!question.value;
-          });
-          return scope.submitFunc({questions: questions}).then(function() {
+          return scope.submitFunc({emailQuestion: scope.emailQuestion, jobs: scope.jobs}).then(function() {
             scope.state = 'ok';
             scope.questions.forEach(function(question) {
               question.value = null;

@@ -18,18 +18,26 @@ router.post('/', function(req, res, next) {
     }
   }));
   
-  const data = req.body;
+  console.log('req.body: ', req.body);
+  
+  const [emailQuestion, jobs] = req.body;
+  
+  console.log('email: ', emailQuestion);
+  console.log('jobs: ', jobs);
   
   var mailOptions = {
-    from: 'Counteroffer <no-reply@counteroffer.me>',
-    to: 'bob@bobstark.me',
+    from: emailQuestion.value || 'Counteroffer',
+    to: 'bobness@gmail.com',
     subject: 'Counteroffer Contact',
-    text: data.map((question) => { 
-      if (Array.isArray(question.value)) {
-        return `${question.text}\n` + question.value.map((val) => `- ${val}`).join('\n');
-      }
-      return `${question.text} - ${question.value}`; 
-    }).join('\n')
+    text: jobs.map((job, index) => {
+      const ret = `Job #${index+1} ***\n`;
+      return ret + job.questions.map((question) => {
+        if (Array.isArray(question.value)) {
+          return `${question.text}\n` + question.value.map((val) => `- ${val}`).join('\n');
+        }
+        return `${question.text} - ${question.value}`; 
+      }).join('\n');
+    }).join('\n\n')
   };
   
   transporter.sendMail(mailOptions, function(error, info) {
