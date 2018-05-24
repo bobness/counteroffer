@@ -22,18 +22,16 @@ router.post('/', function(req, res, next) {
   
   const [emailQuestion, jobs] = req.body;
   
-  console.log('email: ', emailQuestion);
-  console.log('jobs: ', jobs);
-  
   var mailOptions = {
-    from: emailQuestion.value || 'Counteroffer',
+//     from: emailQuestion.value || 'Counteroffer', // TODO: always has it from bob@bobstark.me
     to: 'bobness@gmail.com',
     subject: 'Counteroffer Contact',
     text: jobs.map((job, index) => {
-      const ret = `Job #${index+1} ***\n`;
+      let ret = `Job #${index+1} ***\n`;
+      ret += `Email - ${emailQuestion.value}\n`;
       return ret + job.questions.map((question) => {
         if (Array.isArray(question.value)) {
-          return `${question.text}\n` + question.value.map((val) => `- ${val}`).join('\n');
+          return `${question.text} - \n` + question.value.map((val) => `- ${val}`).join('\n');
         }
         return `${question.text} - ${question.value}`; 
       }).join('\n');
