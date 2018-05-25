@@ -40,8 +40,8 @@ h2 {
   font-weight: bold;
 }
 
-.smcx-widget {
-  margin: 0 auto !important;
+.survey {
+  margin-top: 10px;
 }
 
 table#facts tbody th {
