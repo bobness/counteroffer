@@ -52,16 +52,13 @@ angular.module('counteroffer', [])
       return $scope.experiences;
     };
     $scope.selectedTags = [];
-    $scope.showSurvey = function() {
-      $location.hash('contact');
+    
+    $scope.goToPage = function(page) {
+      return $location.hash(page);
     };
     
-    $scope.hideSurvey = function() {
-      $location.hash('');
-    };
-    
-    $scope.surveyVisible = function() {
-      return $location.hash() === 'contact';
+    $scope.getCurrentPage = function() {
+      return $location.hash();
     };
     
     $scope.sendEmail = function(obj) {
@@ -73,16 +70,17 @@ angular.module('counteroffer', [])
     };
     
   }])
-  .directive('experience', [function() {
+  .directive('experience', ['$sce', function($sce) {
     return {
       templateUrl: 'experience.html',
       scope: {
-        data: '='
+        data: '=',
+        page: '<'
       },
       link: function(scope) {
         scope.getFormattedDescription = function() {
   	      if (scope.data.description) {
-  	        return scope.data.description.split('\n').join('<br>');
+  	        return $sce.trustAsHtml(scope.data.description.split('\n').join('<br>'));
   	      }
   	      return '';
         };

@@ -22,13 +22,35 @@
   </head>
   <body ng-app="counteroffer" ng-controller="controller">
     
+    <div style="text-align:center;margin:1em" id="navLinks">
+      <ul class="nav nav-pills" style="display:inline-block;">
+        <li ng-class="{active: !getCurrentPage()}">
+          <a ng-click="goToPage('')" style="cursor:pointer;">Experiences</a>
+        </li>
+        <li ng-class="{active: getCurrentPage() === 'print'}">
+          <a ng-click="goToPage('print')" style="cursor:pointer;">Print</a>
+        </li>
+        <li ng-class="{active: getCurrentPage() === 'contact'}">
+          <a ng-click="goToPage('contact')" style="cursor:pointer;">Contact</a>
+        </li>
+      </ul>
+    </div>
+    
     <div style="text-align:center;">
       <h1>Bob Stark</h1>
       <div>
         <table id="facts" class="table table-striped table-bordered" style="text-align:left;">
           <tbody>
-            <tr ng-repeat="fact in facts track by $index">
-              <th scope="row">{{ fact.name }}</th>
+            <tr ng-repeat="fact in facts track by $index" ng-init="showObj = {print: false}" ng-class="{hideFromPrint: !showObj.print}">
+              <th scope="row">
+                <span ng-if="getCurrentPage() === 'print'" class="togglePrint hideFromPrint">
+                  <label>
+                    Include
+                    <input type="checkbox" ng-model="showObj.print" />
+                  </label>
+                </span>
+                {{ fact.name }}
+              </th>
               <td>{{ fact.value }}</td>
             </tr>
           </tbody>
@@ -37,7 +59,7 @@
     </div>
     
     <div style="max-height:300px;overflow-y:scroll;border:1px black solid;border-radius:5px;">
-      <histogram
+      <histogram ng-show="getCurrentPage() !== 'print'"
         tag-counts="tagCounts" 
         set-filter="setFilter(func)" 
         get-experiences="getExperiences()" 
@@ -45,21 +67,12 @@
         themes="portfolio.themes"
         ></histogram>
     </div>
-    <div style="text-align:center;margin:1em" id="navLinks">
-      <ul class="nav nav-pills" style="display:inline-block;">
-        <li ng-class="{active: !surveyVisible()}">
-          <a ng-click="hideSurvey()" style="cursor:pointer;">Experiences</a>
-        </li>
-        <li ng-class="{active: surveyVisible()}">
-          <a ng-click="showSurvey()" style="cursor:pointer;">Contact</a>
-        </li>
-      </ul>
-    </div>
-    <div ng-if="!surveyVisible()">
-      <experience ng-repeat="exp in experiences | filter:expFilter | orderBy : parseDate : true" data="exp"></experience>
+    
+    <div ng-if="!getCurrentPage() || getCurrentPage() === 'print'">
+      <experience ng-repeat="exp in experiences | filter:expFilter | orderBy : parseDate : true" data="exp" page="getCurrentPage()"></experience>
     </div>
     
-    <survey ng-if="surveyVisible()"
+    <survey ng-if="getCurrentPage() === 'contact'"
       questions="questions"
       tag-counts="tagCounts"
       submit-func="sendEmail({emailQuestion: emailQuestion, jobs: jobs})">
