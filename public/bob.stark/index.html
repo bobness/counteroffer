@@ -27,11 +27,11 @@
         <li ng-class="{active: !getCurrentPage()}">
           <a ng-click="goToPage('')" style="cursor:pointer;">Experiences</a>
         </li>
-        <li ng-class="{active: getCurrentPage() === 'print'}">
-          <a ng-click="goToPage('print')" style="cursor:pointer;">Print</a>
-        </li>
         <li ng-class="{active: getCurrentPage() === 'contact'}">
           <a ng-click="goToPage('contact')" style="cursor:pointer;">Contact</a>
+        </li>
+        <li ng-class="{active: getCurrentPage() === 'print'}">
+          <a ng-click="goToPage('print')" style="cursor:pointer;">Print</a>
         </li>
       </ul>
     </div>
