@@ -265,4 +265,13 @@ angular.module('counteroffer', [])
         
       }
     };
-  });
+  })
+  .factory('jobService', function() {
+    var service = {};
+    
+    service.addJob = function() {
+      // TODO
+    };
+    
+    return service;
+  })
