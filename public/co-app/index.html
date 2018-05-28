@@ -30,8 +30,9 @@
           x - view jobs on co.app
           x - fix bootstrap issue where > 1 card can be open at one time
           x - improve styling for job cards so it's obvious you're looking at one of them (i.e., make it look more like an accordion)
-          - make another table called 'messages' to differentiate from 'facts', and put initial question values in it
+          x? - make another table called 'messages' to differentiate from 'facts', and put initial question values in it
           - implement selection-based fact-adding (take code from pmboard) and add it to the 'scratch pad' for the selected job by adding it to the 'facts' table
+          - move to counteroffer.me/production and make sure it works (start with port = 3000, and then reconfig upstart to run all 3 node services, then move to port 80)
         - respond to recruiter (i.e., add message to job 'message') - for 1 core counteroffer
           - add datetime to message entries if not already there
         - publish multiple counteroffers to counteroffer.me
@@ -51,7 +52,7 @@
           <div id="collapse{{$index+1}}" class="collapse" aria-labelledby="heading{{$index+1}}" data-parent="#accordion">
             <div class="panel-body">
               <ul style="text-align:left;">
-                <li ng-repeat="message in job.messages">{{ message.text }}: {{ message.value }}</li>
+                <li ng-repeat="message in job.messages"><strong>{{ message.text }}</strong> - {{ message.value }}</li>
               </ul>
             </div>
           </div>
