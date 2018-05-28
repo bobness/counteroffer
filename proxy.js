@@ -8,22 +8,37 @@ const proxyOptions = {
   'counteroffer.app': 'http://localhost:3002'
 };
 
+const parseUrlForDomain = (url) => {
+  // ~ '/counteroffer.me'
+  return url.match(/^\/(.*)/)[1];
+};
+
+const parseRefererForDomain = (referer) => {
+  // ~ 'http://localhost/counteroffer.me'
+  return referer.match(/http:\/\/localhost\/([^\/]+)\/?/)[1];
+};
+
 const server = http.createServer((req, res) => {
-  // const target = proxyOptions[req.headers.host] // production
-  
-  // development
-  const afterFirstSlash = req.url.substr(1);
-  let secondSlashPos = afterFirstSlash.indexOf('/');
-  if (secondSlashPos === -1) {
-    secondSlashPos = afterFirstSlash.length;
+  let proxyTarget;
+  if (req.headers.host.indexOf('localhost') > -1) {
+    // development
+    let domainName = parseUrlForDomain(req.url); // for the initial page load
+    if (proxyOptions[domainName]) {
+      proxyTarget = proxyOptions[domainName];
+      req.url = '';
+    } else if (req.headers.referer) {
+      domainName = parseRefererForDomain(req.headers.referer); // for fetching resources after initial load
+      proxyTarget = proxyOptions[domainName];
+    }
+  } else {
+    // production
+    proxyTarget = proxyOptions[req.headers.host];
   }
-  const domainName = afterFirstSlash.substr(0, secondSlashPos),
-        proxyTarget = proxyOptions[domainName],
-        newUrl = afterFirstSlash.substr(secondSlashPos);
+
   if (proxyTarget) {
-      req.url = newUrl;
-      proxy.web(req, res, { target: proxyTarget });
-      // TODO: make sure I don't need other options: https://github.com/nodejitsu/node-http-proxy/blob/master/lib/http-proxy.js#L22-L50
+    proxy.web(req, res, { target: proxyTarget });
+  } else {
+    res.writeHead(404, res.headers);
   }
 }).listen(80);
 

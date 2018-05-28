@@ -16,7 +16,6 @@
     
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="angular.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsSHA/2.3.1/sha.js"></script>
     <script src="app.js"></script>
     
   </head>
@@ -35,6 +34,10 @@
         </li>
       </ul>
     </div>
+    
+    <p ng-show="getCurrentPage() === 'print'">
+      Check items you'd like to include in a printed (or printed-to-PDF) version of this portfolio.
+    </p>
     
     <div style="text-align:center;">
       <h1>Bob Stark</h1>

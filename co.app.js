@@ -5,13 +5,13 @@ const express = require('express'),
       app = express(),
       http = require('http');
 
-app.use('/', (req, res, next) => next(), express.static('public/co.app'));
+app.use('/', (req, res, next) => next(), express.static('public/co-app'));
 
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-const index = require('./routes/co.app');
+const index = require('./routes/co-app');
 app.use('/', index);
 
 const server = http.createServer(app);
