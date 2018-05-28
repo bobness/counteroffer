@@ -30,10 +30,10 @@
           x - view jobs on co.app
           x - fix bootstrap issue where > 1 card can be open at one time
           x - improve styling for job cards so it's obvious you're looking at one of them (i.e., make it look more like an accordion)
-          - make another table called 'discussions' to differentiate from 'facts', and put initial question values in it
+          - make another table called 'messages' to differentiate from 'facts', and put initial question values in it
           - implement selection-based fact-adding (take code from pmboard) and add it to the 'scratch pad' for the selected job by adding it to the 'facts' table
-        - respond to recruiter (i.e., add message to job 'discussion') - for 1 core counteroffer
-          - add datetime to discussion entries if not already there
+        - respond to recruiter (i.e., add message to job 'message') - for 1 core counteroffer
+          - add datetime to message entries if not already there
         - publish multiple counteroffers to counteroffer.me
           - create another table 'counteroffers' and link to 'jobs'
         - list jobs/discussions per counteroffer
@@ -42,17 +42,16 @@
     -->
     
     <div class="col-lg-12" style="margin: 0 auto;text-align:center;">
-      <div class="col-sm-8 outline" id="accordion">
-        <h3>Jobs</h3>
+      <div class="col-sm-8" id="accordion" style="margin-top:15px;">
         <div ng-repeat="job in jobs track by $index" ng-show="!busy" class="panel panel-default">
-          <div class="panel-heading" id="heading{{$index+1}}" data-toggle="collapse" data-target="#collapse{{$index+1}}" aria-expanded="false" aria-controls="collapse${$index+1}}" style="cursor:pointer;">
+          <div class="panel-heading" id="heading{{$index+1}}" data-toggle="collapse" data-target="#collapse{{$index+1}}" aria-expanded="false" aria-controls="collapse${$index+1}}" style="cursor:pointer;" ng-click="toggleJob(job)">
             Job #{{ $index + 1 }} from {{ job.email }}
           </div>
       
           <div id="collapse{{$index+1}}" class="collapse" aria-labelledby="heading{{$index+1}}" data-parent="#accordion">
             <div class="panel-body">
               <ul style="text-align:left;">
-                <li ng-repeat="fact in job.facts">{{ fact.text }}: {{ fact.value }}</li>
+                <li ng-repeat="message in job.messages">{{ message.text }}: {{ message.value }}</li>
               </ul>
             </div>
           </div>
@@ -64,9 +63,11 @@
       </div>
       
       <div class="col-sm-4">
-        <h3>Scratch Pad</h3>
-        <div ng-show="job.selected">
-          <div ng-repeat="fact in job.facts"></div>
+        <div class="panel panel-default" id="scratchPad">
+          <div class="panel-heading">Scratch Pad</div>
+          <div class="panel-body">
+            <div ng-repeat="fact in job.facts"></div>
+          </div>
         </div>
       </div>
     </div>

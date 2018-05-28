@@ -1,4 +1,6 @@
-div.outline {
-  border: 1px #ccc solid;
-  border-radius: 5px;
+#scratchPad {
+  position: absolute;
+  right: 0;
+  width: 100%;
+  display: none;
 }

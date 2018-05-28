@@ -16,7 +16,7 @@ router.post('/jobs', function(req, res, next) {
     return Promise.all(jobs.map((job) => {
       return job.questions.map((question) => {
         return req.client.query({
-          text: 'insert into facts (type, text, value, job_id) values($1::text, $2::text, $3::text, $4::bigint) returning *',
+          text: 'insert into discussions (type, text, value, job_id) values($1::text, $2::text, $3::text, $4::bigint) returning *',
           values: [question.type, question.text, question.value, newJob.id]
         });
       })
