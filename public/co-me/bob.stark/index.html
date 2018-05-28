@@ -19,7 +19,7 @@
     <script src="app.js"></script>
     
   </head>
-  <body ng-app="counteroffer" ng-controller="controller">
+  <body ng-app="counteroffer.me" ng-controller="controller">
     
     <div style="text-align:center;margin:1em" id="navLinks">
       <ul class="nav nav-pills" style="display:inline-block;">
@@ -78,7 +78,7 @@
     <survey ng-if="getCurrentPage() === 'contact'"
       questions="questions"
       tag-counts="tagCounts"
-      submit-func="sendEmail({emailQuestion: emailQuestion, jobs: jobs})">
+      submit-func="addJobs({emailQuestion: emailQuestion, jobs: jobs})">
     </survey>
   </body>
 </html>

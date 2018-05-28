@@ -8,34 +8,68 @@
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
     
+    <link rel="stylesheet" href="style.css" />
+    
     <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon" />
     
     <title>Counteroffer</title>
     
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+    <script src="bower_components/angular/angular.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script src="app.js"></script>
+    
   </head>
   
-  <body>
+  <body ng-app="counteroffer.app" ng-controller="controller">
     
     <!--
       use cases:
-        - publish counteroffer
-        - track jobs (per counteroffer?)
-        - respond to recruiter
-      
-      
+        - track jobs - for 1 core counteroffer
+          x - add jobs to db from co.me
+          x - view jobs on co.app
+          - make another table called 'discussions' to differentiate from 'facts', and put initial question values in it
+          - implement selection-based fact-adding (take code from pmboard) and add it to the 'scratch pad' for the selected job by adding it to the 'facts' table
+        - respond to recruiter (i.e., add message to job 'discussion') - for 1 core counteroffer
+          - add datetime to discussion entries if not already there
+        - publish multiple counteroffers to counteroffer.me
+          - create another table 'counteroffers' and link to 'jobs'
+        - list jobs/discussions per counteroffer
+          - consider adding a tab UI to co.app to show them
+          - merge portfolio-creator (via npm install) onto this interface (I think?)
     -->
     
     <div class="col-lg-12" style="margin: 0 auto;text-align:center;">
-      <div class="col-sm-4">
-        Left
+      <div class="col-sm-8 outline" id="accordion">
+        <h3>Jobs</h3>
+        <div ng-repeat="job in jobs track by $index" ng-show="!busy" class="card">
+          <div class="card-header" id="heading{{$index+1}}">
+            <h5 class="mb-0">
+              <button class="btn btn-link" data-toggle="collapse" data-target="#collapse{{$index+1}}" aria-expanded="false" aria-controls="collapse${$index+1}}">
+                Job #{{ $index + 1 }} from {{ job.email }}
+              </button>
+            </h5>
+          </div>
+      
+          <div id="collapse{{$index+1}}" class="collapse" aria-labelledby="heading{{$index+1}}" data-parent="#accordion">
+            <div class="card-body">
+              <ul style="text-align:left;">
+                <li ng-repeat="fact in job.facts">{{ fact.text }}: {{ fact.value }}</li>
+              </ul>
+            </div>
+          </div>
+          
+        </div>
+        <div ng-show="busy">
+          <img src="loading.gif" />
+        </div>
       </div>
       
       <div class="col-sm-4">
-        Middle
-      </div>
-      
-      <div class="col-sm-4">
-        Right
+        <h3>Scratch Pad</h3>
+        <div ng-show="job.selected">
+          <div ng-repeat="fact in job.facts"></div>
+        </div>
       </div>
     </div>
     
