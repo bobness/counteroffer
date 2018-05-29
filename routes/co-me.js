@@ -21,6 +21,7 @@ router.post('/jobs', function(req, res, next) {
         });
       })
     })).then(() => {
+      req.client.end();
       return res.sendStatus(200);
     });
   });
