@@ -15,7 +15,8 @@ const parseUrlForDomain = (url) => {
 
 const parseRefererForDomain = (referer) => {
   // ~ 'http://localhost/counteroffer.me'
-  return referer.match(/http:\/\/localhost\/([^\/]+)\/?/)[1];
+  const match = referer.match(/http:\/\/localhost(:\d+)?\/([^\/]+)\/?/);
+  return match ? match[2] : null;
 };
 
 const server = http.createServer((req, res) => {
@@ -40,7 +41,7 @@ const server = http.createServer((req, res) => {
   } else {
     res.writeHead(404, res.headers);
   }
-}).listen(80);
+}).listen(process.env.PORT || 80);
 
 server.on('listening', () => {
 	console.log('Listening on ', server.address());
