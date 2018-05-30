@@ -6,6 +6,7 @@ angular.module('counteroffer.me', ['ngCookies'])
       $scope.tagCounts = countTags(json.experiences, json.tags);
       $scope.facts = json.facts;
       $scope.messages = json.questions;
+      scope.addJob(); // 1 minimum
     });
     
     var countTags = function(experiences, tags) {
@@ -247,8 +248,6 @@ angular.module('counteroffer.me', ['ngCookies'])
             scope.newJob = scope.jobs.some(function(job) { return !job.id; });
           });
         };
-        
-        scope.addJob(); // 1 minimum
         
         scope.progress = function() {
           var messages = [].concat(scope.emailQuestion);
