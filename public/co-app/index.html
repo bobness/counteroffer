@@ -36,7 +36,7 @@
           x - split multiple jobs on co.app - currently combined into one
           x - move to counteroffer.me/production and make sure it works (start with port = 3000, and then reconfig upstart to run all 3 node services, then shut down 'counteroffer' job and move proxy to port 80)
           x - add ability to just add facts, not needing selection
-          - add 'remember me'/cookie that saves their email address and shows a partially-read-only view on the contact page - jobs and messages assigned to that email address
+          x - add 'remember me'/cookie that saves their email address and shows a partially-read-only view on the contact page - jobs and messages assigned to that email address
           - implement basic login on co.app (co.io for now) so it's not generally available to the web (involves creating a 'user' db with md5 password hashes, and md5'ing passwords in the node app, POST /session, and linking jobs to this user_id)
         
         - respond to recruiter (i.e., add message to job 'message') - for 1 core counteroffer
@@ -61,6 +61,12 @@
         </div>
         <div ng-repeat="job in jobs track by $index" ng-show="!busy" class="panel panel-default">
           <div class="panel-heading" id="heading{{$index+1}}" data-toggle="collapse" data-target="#collapse{{$index+1}}" aria-expanded="false" aria-controls="collapse${$index+1}}" style="cursor:pointer;" ng-click="toggleJob(job)">
+            <div style="float:right;clear:both;margin-top:-5px;" ng-show="jobs.length > 1">
+              <button class="btn btn-sm btn-default panel" ng-click="deleteJob(job)">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                Delete Job
+              </button>
+            </div>
             Job #{{ $index + 1 }} from {{ job.email }}
           </div>
       

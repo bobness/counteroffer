@@ -15,6 +15,14 @@ angular.module('counteroffer.app', [
     
     $scope.selectedJob = null;
     
+    $scope.deleteJob = function(job) {
+      var index = $scope.jobs.indexOf(job);
+      $http.delete('/jobs/' + job.id).then(function() {
+        $scope.jobs.splice(index, 1);
+        $scope.selectedJob = null;
+      });
+    };
+    
     var moveScratchPad = function() {
       var $elem = $('.panel-heading[aria-expanded="true"');
       var top = 15;

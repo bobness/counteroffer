@@ -16,6 +16,7 @@
     
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="angular.min.js"></script>
+    <script src="angular-cookies.min.js"></script>
     <script src="app.js"></script>
     
   </head>
@@ -76,9 +77,9 @@
     </div>
     
     <survey ng-if="getCurrentPage() === 'contact'"
-      questions="questions"
+      messages="messages"
       tag-counts="tagCounts"
-      submit-func="addJobs({emailQuestion: emailQuestion, jobs: jobs})">
+      submit-func="submitSurvey({email: email, rememberMe: rememberMe, jobs: jobs, saved: saved, job: job})">
     </survey>
   </body>
 </html>

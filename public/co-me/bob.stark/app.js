@@ -1,11 +1,11 @@
-angular.module('counteroffer.me', [])
-  .controller('controller', ['$scope', '$http', '$location', function($scope, $http, $location) {
+angular.module('counteroffer.me', ['ngCookies'])
+  .controller('controller', ['$scope', '$http', '$location', '$cookies', function($scope, $http, $location, $cookies) {
     $http.get(('Counteroffer.json')).then(function(res) {
       var json = res.data;
       $scope.experiences = json.experiences;
       $scope.tagCounts = countTags(json.experiences, json.tags);
       $scope.facts = json.facts;
-      $scope.questions = json.questions;
+      $scope.messages = json.questions;
     });
     
     var countTags = function(experiences, tags) {
@@ -71,11 +71,38 @@ angular.module('counteroffer.me', [])
     };
 */
     
-    $scope.addJobs = function(obj) {
-      return $http.post('/jobs', {
-        email: obj.emailQuestion.value,
-        jobs: obj.jobs
-      });
+    $scope.submitSurvey = function(obj) {
+      var email = obj.email,
+          jobs = obj.jobs,
+          job = obj.job,
+          saved = obj.saved;
+      if (saved && job) {
+        if (job.id) {
+          return $http.put('/jobs/' + job.id, {
+            job: job
+          }).then(function() {
+            location.reload();
+          });
+        } else {
+          return $http.post('/jobs', {
+            email: email,
+            jobs: [job]
+          }).then(function() {
+            location.reload();
+          });
+        }
+      } else {
+        var rememberMe = obj.rememberMe;
+        if (rememberMe) {
+          $cookies.put('email', email);
+        }
+        return $http.post('/jobs', {
+          email: email,
+          jobs: jobs
+        }).then(function() {
+          location.reload();
+        });
+      }
     };
     
   }])
@@ -159,21 +186,42 @@ angular.module('counteroffer.me', [])
       }
     };
   }])
-  .directive('survey', function() {
+  .directive('survey', ['$cookies', '$http', function($cookies, $http) {
     return {
       templateUrl: 'survey.html',
       scope: {
         tagCounts: '<',
-        questions: '<',
+        messages: '<',
         submitFunc: '&'
       },
       link: function(scope, elem, attrs) {
         scope.state = 'ok';
+        scope.jobs = [];
+        
+        if ($cookies.get('email')) {
+          scope.savedEmail = $cookies.get('email');
+          $http.get('/jobs?email=' + scope.savedEmail).then(function(response) {
+            scope.jobs = response.data;
+            scope.currentJob = scope.jobs[0];
+            scope.newJob = false;
+          });
+        }
+        
+        scope.selectJob = function(job) {
+          scope.currentJob = job;
+        };
+        
+        scope.jobIsSelected = function(job) {
+          if (!scope.currentJob) {
+            scope.currentJob = scope.jobs[0];
+          }
+          return scope.currentJob === job;
+        };
+        
         scope.emailQuestion = {
           required: true,
-          value: null
+          value: scope.savedEmail || null
         };
-        scope.jobs = [];
         
         var copyQuestion = function(question) {
           var obj = {};
@@ -184,29 +232,36 @@ angular.module('counteroffer.me', [])
         };
         
         scope.addJob = function() {
-          scope.jobs.push({questions: scope.questions.map(function(question) {
-            return copyQuestion(question);
+          scope.jobs.push({messages: scope.messages.map(function(msg) {
+            return copyQuestion(msg);
           })});
+          scope.currentJob = scope.jobs[scope.jobs.length - 1];
+          scope.newJob = true;
         };
         
-        scope.deleteJob = function(index) {
-          scope.jobs.splice(index, 1);
+        scope.deleteJob = function() {
+          var index = scope.jobs.indexOf(scope.currentJob);
+          $http.delete('/jobs/' + scope.currentJob.id).then(function() {
+            scope.jobs.splice(index, 1);
+            scope.currentJob = scope.jobs[0];
+            scope.newJob = scope.jobs.some(function(job) { return !job.id; });
+          });
         };
         
         scope.addJob(); // 1 minimum
         
         scope.progress = function() {
-          var questions = [].concat(scope.emailQuestion);
-          questions = scope.jobs.reduce(function(questions, job) {
-            return questions.concat(job.questions);
-          }, questions);
-          var requiredQuestions = questions.filter(function(question) { return question.required; });
+          var messages = [].concat(scope.emailQuestion);
+          messages = scope.jobs.reduce(function(messages, job) {
+            return messages.concat(job.messages);
+          }, messages);
+          var requiredQuestions = messages.filter(function(msg) { return msg.required; });
           var denominator = requiredQuestions.length;
-          var numerator = requiredQuestions.filter(function(question) { 
-            if (Array.isArray(question.value)) {
-              return question.value.length > 0;
+          var numerator = requiredQuestions.filter(function(msg) { 
+            if (Array.isArray(msg.value)) {
+              return msg.value.length > 0;
             }
-            return question.value; 
+            return msg.value; 
           }).length;
           
           return Math.round((numerator/denominator)*100);
@@ -262,10 +317,16 @@ angular.module('counteroffer.me', [])
         
         scope.submit = function() {
           scope.state = 'busy';
-          return scope.submitFunc({emailQuestion: scope.emailQuestion, jobs: scope.jobs}).then(function() {
+          var obj = {};
+          if (scope.savedEmail) {
+            obj = {saved: true, job: scope.currentJob, email: scope.savedEmail};
+          } else {
+            obj = {email: scope.emailQuestion.value, jobs: scope.jobs, rememberMe: scope.emailQuestion.rememberMe};
+          }
+          return scope.submitFunc(obj).then(function() {
             scope.state = 'ok';
-            scope.questions.forEach(function(question) {
-              question.value = null;
+            scope.messages.forEach(function(msg) {
+              msg.value = null;
             });
           }).catch(function(err) {
             scope.state = 'error';
@@ -274,4 +335,4 @@ angular.module('counteroffer.me', [])
         
       }
     };
-  })
+  }])

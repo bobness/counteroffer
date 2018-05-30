@@ -14,6 +14,27 @@ router.get('/jobs', function(req, res, next) {
   });
 });
 
+router.delete('/jobs/:job_id', (req, res, next) => {
+  const jobID = req.params.job_id;
+  return req.client.query({
+    text: 'delete from messages where job_id = $1::bigint',
+    values: [jobID]
+  }).then(() => {
+    return req.client.query({
+      text: 'delete from facts where job_id = $1::bigint',
+      values: [jobID]
+    });
+  }).then(() => {
+    return req.client.query({
+      text: 'delete from jobs where id = $1::bigint',
+      values: [jobID]
+    });
+  }).then(() => {
+    // req.client.end() // throws an error?
+    return res.sendStatus(200);
+  });
+})
+
 router.get('/jobs/:job_id/messages', (req, res, next) => {
 	return req.client.query({
   	text: 'select * from messages where job_id = $1::bigint',
