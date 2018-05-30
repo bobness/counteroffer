@@ -5,7 +5,8 @@ const path = require('path'),
 const proxy = httpProxy.createProxy();
 const proxyOptions = {
   'counteroffer.me': 'http://localhost:3001',
-  'counteroffer.app': 'http://localhost:3002'
+  'counteroffer.io': 'http://localhost:3002',
+//   'counteroffer.app': 'http://localhost:3002' // disable until I get SSL working as .app is SSL-only
 };
 
 const parseUrlForDomain = (url) => {
