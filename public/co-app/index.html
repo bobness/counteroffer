@@ -33,15 +33,18 @@
           x - improve styling for job cards so it's obvious you're looking at one of them (i.e., make it look more like an accordion)
           x - make another table called 'messages' to differentiate from 'facts', and put initial question values in it
           x - implement selection-based fact-adding (take code from portfolio-creator) and add it to the 'scratch pad' for the selected job by adding it to the 'facts' table
-          - split multiple jobs on co.app - currently combined into one
-          - move to counteroffer.me/production and make sure it works (start with port = 3000, and then reconfig upstart to run all 3 node services, then shut down 'counteroffer' job and move proxy to port 80)
-          - re-add emailing myself when I get a new contact, w/ a link to the job (involves parsing the path or hash for the job ID and selecting that job)
+          x - split multiple jobs on co.app - currently combined into one
+          x - move to counteroffer.me/production and make sure it works (start with port = 3000, and then reconfig upstart to run all 3 node services, then shut down 'counteroffer' job and move proxy to port 80)
+          x - add ability to just add facts, not needing selection
+          - add 'remember me'/cookie that saves their email address and shows a partially-read-only view on the contact page - jobs and messages assigned to that email address
+          - implement basic login on co.app (co.io for now) so it's not generally available to the web (involves creating a 'user' db with md5 password hashes, and md5'ing passwords in the node app, POST /session, and linking jobs to this user_id)
         
         - respond to recruiter (i.e., add message to job 'message') - for 1 core counteroffer
+          - enable replying on co.app
+          - show replies on co.me contact page
           - add datetime to message entries if not already there
-          - show a read-only version of their survey response after submitting it - the start of a discussion
-          - implement 'remember me' checkbox on the survey (w/ cookie)
           - implement another checkbox to notify them of responses via email (or maybe combine w/ prev checkbox)
+          - re-add emailing myself when I get a new contact, w/ a link to the job (involves parsing the path or hash for the job ID and selecting that job)
         
         - publish multiple counteroffers to counteroffer.me
           - merge portfolio-creator (via npm install) onto this interface (I think?)
@@ -85,17 +88,26 @@
             <div ng-show="gettingFacts">
               <img src="loading.gif" />
             </div>
-            <ul style="text-align:left;">
-              <li ng-repeat="fact in selectedJob.facts | orderBy: 'id'" ng-hide="gettingFacts">
-                #{{ fact.id }}
-                <a href="#" editable-text="fact.key" onaftersave="updateFact(selectedJob, fact)">
-                  <strong>{{ fact.key }}</strong>
-                </a> &rarr;
-                <a href="#" editable-text="fact.value" onaftersave="updateFact(selectedJob, fact)">
-                  {{ fact.value }}
-                </a>
-              </li>
-            </ul>
+            <table class="table" ng-show="selectedJob.facts.length > 0" style="text-align:left;">
+              <thead>
+                <tr>
+                  <th scope="col">Fact Name</th>
+                  <th scope="col">Fact Value</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="fact in selectedJob.facts | orderBy: 'id'" ng-hide="gettingFacts">
+                  <td><a href="#" editable-text="fact.key" onaftersave="updateFact(selectedJob, fact)">
+                    <strong>{{ fact.key }}</strong>
+                  </a></td>
+                  <td><a href="#" editable-text="fact.value" onaftersave="updateFact(selectedJob, fact)">
+                    {{ fact.value }}
+                  </a></td>
+                  <td>Delete</td>
+                </tr>
+              </tbody>
+            </table>
             <div ng-show="!selectedJob.facts || selectedJob.facts.length === 0">
               <p>Select text from the job messages to add facts to your scratch pad</p>
             </div>
@@ -103,6 +115,12 @@
               <button class="btn btn-sm btn-default" ng-click="addFactFromSelection(selectedJob)">
                 <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                 Add Selected Text
+              </button>
+            </div>
+            <div style="margin-top:15px;" ng-show="selectedJob">
+              <button class="btn btn-sm btn-default" ng-click="addFact(selectedJob)">
+                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                Manually Add New Fact
               </button>
             </div>
           </div>
