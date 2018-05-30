@@ -11,19 +11,19 @@ router.post('/jobs', function(req, res, next) {
   const values = req.body,
         email = values.email,
         jobs = values.jobs;
-  return req.client.query({text: 'insert into jobs (email) values($1) returning id', values: [email]}).then((result) => {
-    const newJob = result.rows[0];
-    return Promise.all(jobs.map((job) => {
+  return Promise.all(jobs.map((job) => {
+    return req.client.query({text: 'insert into jobs (email) values($1) returning id', values: [email]}).then((result) => {
+      const newJob = result.rows[0];
       return job.questions.map((question) => {
         return req.client.query({
-          text: 'insert into messages (type, text, value, job_id) values($1::text, $2::text, $3::text, $4::bigint) returning *',
+          text: 'insert into messages (type, text, value, job_id) values($1::text, $2::text, $3::text, $4::bigint)',
           values: [question.type, question.text, question.value, newJob.id]
         });
       })
-    })).then(() => {
-      req.client.end();
-      return res.sendStatus(200);
     });
+  })).then(() => {
+    // req.client.end() // throws an error?
+    return res.sendStatus(200);
   });
 });
 
