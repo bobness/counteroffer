@@ -6,7 +6,7 @@ angular.module('counteroffer.me', ['ngCookies'])
       $scope.tagCounts = countTags(json.experiences, json.tags);
       $scope.facts = json.facts;
       $scope.messages = json.questions;
-      scope.addJob(); // 1 minimum
+      $scope.addJob(); // 1 minimum
     });
     
     var countTags = function(experiences, tags) {
