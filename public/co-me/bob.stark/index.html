@@ -16,11 +16,10 @@
     
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="angular.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsSHA/2.3.1/sha.js"></script>
     <script src="app.js"></script>
     
   </head>
-  <body ng-app="counteroffer" ng-controller="controller">
+  <body ng-app="counteroffer.me" ng-controller="controller">
     
     <div style="text-align:center;margin:1em" id="navLinks">
       <ul class="nav nav-pills" style="display:inline-block;">
@@ -35,6 +34,10 @@
         </li>
       </ul>
     </div>
+    
+    <p ng-show="getCurrentPage() === 'print'">
+      Check items you'd like to include in a printed (or printed-to-PDF) version of this portfolio.
+    </p>
     
     <div style="text-align:center;">
       <h1>Bob Stark</h1>
@@ -75,7 +78,7 @@
     <survey ng-if="getCurrentPage() === 'contact'"
       questions="questions"
       tag-counts="tagCounts"
-      submit-func="sendEmail({emailQuestion: emailQuestion, jobs: jobs})">
+      submit-func="addJobs({emailQuestion: emailQuestion, jobs: jobs})">
     </survey>
   </body>
 </html>

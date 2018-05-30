@@ -1,4 +1,4 @@
-angular.module('counteroffer', [])
+angular.module('counteroffer.me', [])
   .controller('controller', ['$scope', '$http', '$location', function($scope, $http, $location) {
     $http.get(('Counteroffer.json')).then(function(res) {
       var json = res.data;
@@ -61,11 +61,20 @@ angular.module('counteroffer', [])
       return $location.hash();
     };
     
+/*
     $scope.sendEmail = function(obj) {
       var emailQuestion = obj.emailQuestion,
           jobs = obj.jobs;
       return $http.post('/email', [emailQuestion, jobs]).then(function() {
         $scope.hideSurvey();
+      });
+    };
+*/
+    
+    $scope.addJobs = function(obj) {
+      return $http.post('/jobs', {
+        email: obj.emailQuestion.value,
+        jobs: obj.jobs
       });
     };
     
@@ -265,4 +274,4 @@ angular.module('counteroffer', [])
         
       }
     };
-  });
+  })

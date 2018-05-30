@@ -1,14 +1,17 @@
 {
-  "name": "contact",
+  "name": "counteroffer",
   "version": "0.0.0",
   "private": true,
   "scripts": {},
   "dependencies": {
     "body-parser": "~1.17.1",
-    "cors": "^2.8.4",
     "express": "~4.15.2",
+    "http": "0.0.0",
+    "http-proxy": "^1.17.0",
+    "http-proxy-rules": "^1.1.3",
     "morgan": "~1.8.1",
     "nodemailer": "^4.0.1",
-    "nodemailer-smtp-transport": "^2.7.4"
+    "nodemailer-smtp-transport": "^2.7.4",
+    "pg": "^7.4.3"
   }
 }
