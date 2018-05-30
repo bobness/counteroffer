@@ -6,7 +6,6 @@ angular.module('counteroffer.me', ['ngCookies'])
       $scope.tagCounts = countTags(json.experiences, json.tags);
       $scope.facts = json.facts;
       $scope.messages = json.questions;
-      $scope.addJob(); // 1 minimum
     });
     
     var countTags = function(experiences, tags) {
@@ -240,6 +239,12 @@ angular.module('counteroffer.me', ['ngCookies'])
           scope.newJob = true;
         };
         
+        scope.$watch('messages', function() {
+          if (scope.messages) {
+            scope.addJob(); // 1 minimum
+          }
+        });
+        
         scope.deleteJob = function() {
           var index = scope.jobs.indexOf(scope.currentJob);
           $http.delete('/jobs/' + scope.currentJob.id).then(function() {
@@ -274,14 +279,16 @@ angular.module('counteroffer.me', ['ngCookies'])
           } else if (newVal.length > oldVal.length) {
             newJobs = newVal.filter(function(job) { return oldVal.indexOf(job) === -1; });
           }
-          newJobs.forEach(function(job) {
-            job.tags = scope.tagCounts.map(function(tag) {
-              return {
-                name: tag.name,
-                selected: false
-              };
+          if (newJobs) {
+            newJobs.forEach(function(job) {
+              job.tags = scope.tagCounts.map(function(tag) {
+                return {
+                  name: tag.name,
+                  selected: false
+                };
+              });
             });
-          });
+          }
         });
         
         scope.selectTag = function(question, tag) {
