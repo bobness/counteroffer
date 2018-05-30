@@ -88,9 +88,13 @@ angular.module('counteroffer.app', [
     }
     
     $scope.addFactFromSelection = function(job) {
+      return $scope.addFact(job, getSelectionText());
+    };
+    
+    $scope.addFact = function(job, textValue) {
       var fact = {
         key: 'Fact name',
-        value: getSelectionText(),
+        value: textValue || 'Fact value',
         job_id: job.id
       };
       return $http.post('/jobs/' + job.id + '/facts', fact).then(function(response) {
