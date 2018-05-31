@@ -53,7 +53,7 @@
           Job #{{$index+1}}
         </div>
         <div class="panel-body">
-          <div class="panel question" ng-repeat="message in currentJob.messages | filter:{value:'!!'}" ng-class="getPanelClass(message)">
+          <div class="panel question" ng-repeat="message in currentJob.messages | filter:getMessageFilter()" ng-class="getPanelClass(message)">
             <div class="panel-heading">
               {{ message.text }} {{ message.required ? '*' : '' }}
             </div>
@@ -77,7 +77,7 @@
               </div>
             </div>
           </div>
-          <div class="panel question panel-primary">
+          <div class="panel question panel-primary" ng-show="!newJob">
             <div class="panel-heading">
               Respond:
             </div>

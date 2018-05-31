@@ -351,6 +351,14 @@ angular.module('counteroffer.me', ['ngCookies'])
           });
         };
         
+        scope.getMessageFilter = function() {
+          if (!scope.newJob) {
+            return function(message) {
+              return !!message.value;
+            };
+          }
+        };
+        
       }
     };
   }])
