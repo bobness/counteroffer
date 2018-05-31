@@ -11,6 +11,10 @@ angular.module('counteroffer.app', [
         session = $cookies.get('session');
     if (username && session) {
       $scope.selectedJob = null;
+      $scope.newMessage = {
+        value: '',
+        username: username
+      };
       $scope.busy = true;
       $http.get('/jobs').then(function(response) {
         $scope.jobs = response.data;
@@ -30,6 +34,14 @@ angular.module('counteroffer.app', [
         $cookies.put('session', session);
         $cookies.put('username', username);
         location.reload();
+      });
+    };
+    
+    $scope.sendMessage = function(message, job) {
+      return $http.post('/jobs/' + job.id + '/messages', message).then(function(response) {
+        var newMsg = response.data;
+        job.messages.push(newMsg);
+        $scope.newMessage.value = '';
       });
     };
     

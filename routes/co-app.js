@@ -57,6 +57,21 @@ router.delete('/jobs/:job_id', (req, res, next) => {
   });
 })
 
+router.post('/jobs/:job_id/messages', (req, res, next) => {
+  const type = 'text',
+        msg = req.body,
+        username = msg.username,
+        text = `Message from ${username}`,
+        value = msg.value;
+  return req.client.query({
+    text: 'insert into messages (type, text, value, job_id) values ($1::text, $2::text, $3::text, $4::bigint) returning *',
+    values: [type, text, value, req.params.job_id]
+  }).then((results) => {
+    const msg = results.rows[0];
+    return res.json(msg);
+  });
+});
+
 router.get('/jobs/:job_id/messages', (req, res, next) => {
 	return req.client.query({
   	text: 'select * from messages where job_id = $1::bigint',

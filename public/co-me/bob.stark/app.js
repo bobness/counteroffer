@@ -200,6 +200,10 @@ angular.module('counteroffer.me', ['ngCookies'])
         
         if ($cookies.get('email')) {
           scope.savedEmail = $cookies.get('email');
+          scope.newMessage = {
+            value: '',
+            email: scope.savedEmail
+          };
           $http.get('/jobs?email=' + scope.savedEmail).then(function(response) {
             scope.jobs = response.data;
             scope.currentJob = scope.jobs[0];
@@ -336,6 +340,14 @@ angular.module('counteroffer.me', ['ngCookies'])
             });
           }).catch(function(err) {
             scope.state = 'error';
+          });
+        };
+        
+        scope.sendMessage = function(message, job) {
+          return $http.post('/jobs/' + job.id + '/messages', message).then(function(response) {
+            var newMsg = response.data;
+            scope.currentJob.messages.push(newMsg);
+            scope.newMessage.value = '';
           });
         };
         

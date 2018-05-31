@@ -75,6 +75,13 @@
               <ul style="text-align:left;">
                 <li ng-repeat="message in job.messages"><strong>{{ message.text }}</strong> - {{ message.value }}</li>
               </ul>
+              <div>
+                <form>
+                  Respond: 
+                  <input type="text" ng-model="newMessage.value">
+                  <button class="btn btn-sm btn-default" type="submit" ng-click="sendMessage(newMessage, job)">Send</button>
+                </form>
+              </div>
             </div>
           </div>
           
