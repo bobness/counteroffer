@@ -1,19 +1,37 @@
 angular.module('counteroffer.app', [
-  'xeditable'
+  'xeditable',
+  'ngCookies'
 ])
   .run(function(editableOptions) {
     editableOptions.theme = 'bs3';
   })
-  .controller('controller', ['$scope', '$http', '$timeout', '$q', function($scope, $http, $timeout, $q) {
+  .controller('controller', ['$scope', '$http', '$timeout', '$q', '$cookies', function($scope, $http, $timeout, $q, $cookies) {
     
-    $scope.busy = true;
-    $http.get('/jobs').then(function(response) {
-      $scope.jobs = response.data;
-    }).finally(() => {
-      $scope.busy = false;
-    });
+    var username = $cookies.get('username'),
+        session = $cookies.get('session');
+    if (username && session) {
+      $scope.selectedJob = null;
+      $scope.busy = true;
+      $http.get('/jobs').then(function(response) {
+        $scope.jobs = response.data;
+      }).finally(() => {
+        $scope.busy = false;
+      });
+    } else {
+      $scope.notLoggedIn = true;
+    }
     
-    $scope.selectedJob = null;
+    $scope.login = function(username, password) {
+      return $http.post('/session', {
+        username: username,
+        password: password
+      }).then((response) => {
+        var session = response.data;
+        $cookies.put('session', session);
+        $cookies.put('username', username);
+        location.reload();
+      });
+    };
     
     $scope.deleteJob = function(job) {
       var index = $scope.jobs.indexOf(job);
@@ -117,4 +135,4 @@ angular.module('counteroffer.app', [
     $scope.updateFact = function(job, fact) {
       return $http.put('/jobs/' + job.id + '/facts/' + fact.id, fact);
     };
-  }])
+  }]);

@@ -1,5 +1,27 @@
 const express = require('express');
 const router = express.Router();
+const md5 = require('md5');
+const uuidv4 = require('uuid/v4');
+
+// TODO: in the future, validate sessions on every request if I want to allow them to timeout
+/*
+router.use((req, res, next) => {
+  const session = req.get('session'),
+        username = req.get('username');
+  return req.client.query({
+    text: 'select current_session from users where username = $1::text',
+    values: [username]
+  }).then((results) => {
+    const user = results.rows[0],
+          currentSession = user.current_session;
+    if (currentSession === session) {
+      return next();
+    } else {
+      return res.sendStatus(401);
+    }
+  })
+});
+*/
 
 /*
 router.get('/', function(req, res, next) {
@@ -78,6 +100,35 @@ router.put('/jobs/:job_id/facts/:fact_id', (req, res, next) => {
     req.client.end();
     return res.sendStatus(200);
   });
+});
+
+router.post('/session', (req, res, next) => {
+  const values = req.body,
+        username = values.username,
+        password = values.password,
+        hash = md5(password);
+  return req.client.query({
+    text: 'select * from users where username = $1::text',
+    values: [username]
+  }).then((results) => {
+    const user = results.rows[0],
+          currentSession = user.current_session,
+          passwordHash = user.hashed_password;
+    if (passwordHash === hash) {
+      if (currentSession) {
+        return res.json(currentSession);
+      }
+      const session = uuidv4();
+      return req.client.query({
+        text: 'update users set current_session = $1::text where id = $2::bigint',
+        values: [session, user.id]
+      }).then(() => {
+        return res.json(session);
+      });
+    } else {
+      return res.sendStatus(403);
+    }
+  })
 });
 
 module.exports = router;
