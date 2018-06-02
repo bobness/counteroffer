@@ -5,7 +5,9 @@ angular.module('counteroffer.app', [
   .run(function(editableOptions) {
     editableOptions.theme = 'bs3';
   })
-  .controller('controller', ['$scope', '$http', '$timeout', '$q', '$cookies', function($scope, $http, $timeout, $q, $cookies) {
+  .controller('controller', [
+    '$scope', '$http', '$timeout', '$q', '$cookies', '$sce',
+    function($scope, $http, $timeout, $q, $cookies, $sce) {
     
     $scope.newJob = {
       email: '',
@@ -158,6 +160,13 @@ angular.module('counteroffer.app', [
         const newJob = response.data;
         $scope.newJob.email = '';
         $scope.jobs.unshift(newJob);
-      })
+      });
+    };
+    
+    $scope.createLinks = function(msg) {
+      if (msg) {
+        return $sce.trustAsHtml(msg.replace(/(https?:\/\/\S+)/, '<a href="$1" target="_blank">$1</a>'));
+      }
+      return msg;
     };
   }]);

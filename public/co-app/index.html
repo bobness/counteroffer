@@ -81,7 +81,7 @@
             </div>
             <div class="panel-body" ng-hide="gettingMessages">
               <ul style="text-align:left;">
-                <li ng-repeat="message in job.messages"><strong>{{ message.text }}</strong> - {{ message.value }}</li>
+                <li ng-repeat="message in job.messages"><strong>{{ message.text }}</strong> - <span ng-bind-html="createLinks(message.value)"></span></li>
               </ul>
               <div>
                 <form>
