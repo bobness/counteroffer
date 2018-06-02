@@ -19,7 +19,7 @@ router.post('/jobs', (req, res, next) => {
       const newJob = result.rows[0];
       return job.messages.map((msg) => {
         return req.client.query({
-          text: 'insert into messages (type, text, value, job_id) values($1::text, $2::text, $3::text, $4::bigint)',
+          text: 'insert into messages (type, text, value, job_id) values($1::text, $2::text, $3::text, $4::bigint) returning *',
           values: [msg.type, msg.text, msg.value, newJob.id]
         });
       });

@@ -29,6 +29,19 @@ router.get('/', function(req, res, next) {
 });
 */
 
+router.post('/jobs', (req, res, next) => {
+  const job = req.body,
+        email = job.email;
+  return req.client.query({
+    text: 'insert into jobs (email, user_id) values($1::text, $2::bigint) returning *', 
+    values: [email, 1] // TODO: pass in other users' IDs
+  }).then((result) => {
+    const newJob = result.rows[0];
+    req.client.end();
+    return res.json(newJob);
+  });
+});
+
 router.get('/jobs', function(req, res, next) {
   return req.client.query({text: 'select * from jobs'}).then((results) => {
     req.client.end();

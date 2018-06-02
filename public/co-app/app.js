@@ -7,6 +7,11 @@ angular.module('counteroffer.app', [
   })
   .controller('controller', ['$scope', '$http', '$timeout', '$q', '$cookies', function($scope, $http, $timeout, $q, $cookies) {
     
+    $scope.newJob = {
+      email: '',
+      messages: []
+    };
+    
     var username = $cookies.get('username'),
         session = $cookies.get('session');
     if (username && session) {
@@ -146,5 +151,13 @@ angular.module('counteroffer.app', [
     
     $scope.updateFact = function(job, fact) {
       return $http.put('/jobs/' + job.id + '/facts/' + fact.id, fact);
+    };
+    
+    $scope.addJob = function(job) {
+      return $http.post('/jobs', $scope.newJob).then(function(response) {
+        const newJob = response.data;
+        $scope.newJob.email = '';
+        $scope.jobs.unshift(newJob);
+      })
     };
   }]);
