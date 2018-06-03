@@ -54,11 +54,15 @@ angular.module('counteroffer.me', ['ngCookies'])
     $scope.selectedTags = [];
     
     $scope.goToPage = function(page) {
-      return $location.hash(page);
+      if (page === $scope.getCurrentPage()) {
+        return location.reload();
+      }
+      $location.search(''); // clear ?job=x param
+      return $location.path(page);
     };
     
     $scope.getCurrentPage = function() {
-      return $location.hash();
+      return $location.path().substring(1);
     };
     
 /*
@@ -189,7 +193,7 @@ angular.module('counteroffer.me', ['ngCookies'])
       }
     };
   }])
-  .directive('survey', ['$cookies', '$http', '$sce', function($cookies, $http, $sce) {
+  .directive('survey', ['$cookies', '$http', '$sce', '$location', function($cookies, $http, $sce, $location) {
     return {
       templateUrl: 'survey.html',
       scope: {
@@ -202,6 +206,7 @@ angular.module('counteroffer.me', ['ngCookies'])
         scope.jobs = [];
         
         if ($cookies.get('email')) {
+          scope.state = 'busy';
           scope.savedEmail = $cookies.get('email');
           scope.newMessage = {
             value: '',
@@ -211,14 +216,16 @@ angular.module('counteroffer.me', ['ngCookies'])
             var data = response.data;
             if (data && data.length > 0) {
               scope.jobs = data;
-              scope.currentJob = scope.jobs[0];
+              var jobID = Number($location.search().job);
+              if (jobID) {
+                scope.currentJob = scope.jobs.filter(function(job) { return job.id == jobID; })[0];
+              } else {
+                scope.currentJob = scope.jobs[0];
+              }
+              scope.state = 'ok';
             }
           });
         }
-        
-        scope.selectJob = function(job) {
-          scope.currentJob = job;
-        };
         
         scope.jobIsSelected = function(job) {
           if (!scope.currentJob) {
@@ -372,6 +379,17 @@ angular.module('counteroffer.me', ['ngCookies'])
             return $sce.trustAsHtml(msg.replace(/(https?:\/\/\S+)/, '<a href="$1" target="_blank">$1</a>'));
           }
           return msg;
+        };
+        
+        scope.getJobs = function(emailQuestion) {
+          var email = emailQuestion.value;
+          $cookies.put('email', email);
+          location.reload();
+        };
+        
+        scope.loadJobURL = function(job) {
+          $location.search('job', job.id);
+          scope.currentJob = job;
         };
         
       }

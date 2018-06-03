@@ -45,7 +45,11 @@ angular.module('counteroffer.app', [
     };
     
     $scope.sendMessage = function(message, job) {
-      return $http.post('/jobs/' + job.id + '/messages', message).then(function(response) {
+      var body = {
+        message: message,
+        email: job.email
+      };
+      return $http.post('/jobs/' + job.id + '/messages', body).then(function(response) {
         var newMsg = response.data;
         job.messages.push(newMsg);
         $scope.newMessage.value = '';

@@ -2,6 +2,17 @@ const express = require('express');
 const router = express.Router();
 const md5 = require('md5');
 const uuidv4 = require('uuid/v4');
+const nodemailer = require('nodemailer');
+
+let transporter;
+router.use((req, res, next) => {
+  transporter = nodemailer.createTransport({
+    sendmail: true,
+    newline: 'unix',
+    path: '/usr/sbin/sendmail'
+  });
+  next();
+});
 
 // TODO: in the future, validate sessions on every request if I want to allow them to timeout
 /*
@@ -72,16 +83,25 @@ router.delete('/jobs/:job_id', (req, res, next) => {
 
 router.post('/jobs/:job_id/messages', (req, res, next) => {
   const type = 'text',
-        msg = req.body,
+        email = req.body.email,
+        msg = req.body.message,
         username = msg.username,
-        value = msg.value;
+        value = msg.value,
+        jobID = req.params.job_id;
   return req.client.query({
     text: 'insert into messages (type, value, job_id, datetime, sender) values ($1::text, $2::text, $3::bigint, NOW(), $4::text) returning *',
-    values: [type, value, req.params.job_id, username]
+    values: [type, value, jobID, username]
   }).then((results) => {
     const msg = results.rows[0];
-    // TODO: email the recruiter there's been a new message
-    return res.json(msg);
+    return transporter.sendMail({
+      from: 'no-reply@conteroffer.me',
+      to: email,
+      subject: 'New message from ' + msg.sender,
+      text: `<strong>${msg.sender}</strong>: ${msg.value}\n
+        <a href="http://counteroffer.me/${username}/#!#contact?job=${jobID}">View discussion</a>`
+    }).then(() => {
+      return res.json(msg);
+    });
   });
 });
 
