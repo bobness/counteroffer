@@ -43,7 +43,7 @@ router.post('/jobs', (req, res, next) => {
 });
 
 router.get('/jobs', function(req, res, next) {
-  return req.client.query({text: 'select * from jobs'}).then((results) => {
+  return req.client.query({text: 'select j.*, m.* from jobs j inner join (select job_id, max(datetime) as latest_msg from messages group by job_id) m on m.job_id=j.id'}).then((results) => {
     req.client.end();
     return res.json(results.rows);
   });
@@ -74,13 +74,13 @@ router.post('/jobs/:job_id/messages', (req, res, next) => {
   const type = 'text',
         msg = req.body,
         username = msg.username,
-        text = `Message from ${username}`,
         value = msg.value;
   return req.client.query({
-    text: 'insert into messages (type, text, value, job_id) values ($1::text, $2::text, $3::text, $4::bigint) returning *',
-    values: [type, text, value, req.params.job_id]
+    text: 'insert into messages (type, value, job_id, datetime, sender) values ($1::text, $2::text, $3::bigint, NOW(), $4::text) returning *',
+    values: [type, value, req.params.job_id, username]
   }).then((results) => {
     const msg = results.rows[0];
+    // TODO: email the recruiter there's been a new message
     return res.json(msg);
   });
 });

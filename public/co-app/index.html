@@ -64,7 +64,7 @@
             Add Job
           </button></form>
         </div>
-        <div ng-repeat="job in jobs | orderBy: 'id' : true track by $index" ng-show="!busy" class="panel panel-default">
+        <div ng-repeat="job in jobs | orderBy: 'latest_msg' : true track by $index" ng-show="!busy" class="panel panel-default">
           <div class="panel-heading" id="heading{{$index+1}}" data-toggle="collapse" data-target="#collapse{{$index+1}}" aria-expanded="false" aria-controls="collapse${$index+1}}" style="cursor:pointer;" ng-click="toggleJob(job)">
             <div style="float:right;clear:both;margin-top:-5px;" ng-show="jobs.length > 1">
               <button class="btn btn-sm btn-default panel" ng-click="deleteJob(job)">
@@ -80,14 +80,15 @@
               <img src="loading.gif" />
             </div>
             <div class="panel-body" ng-hide="gettingMessages">
-              <ul style="text-align:left;">
-                <li ng-repeat="message in job.messages"><strong>{{ message.text }}</strong> - <span ng-bind-html="createLinks(message.value)"></span></li>
+              <ul class="list-unstyled" style="clear:both;">
+                <li ng-repeat="message in job.messages" ng-style="getMessageStyle(job, message.sender)">
+                  <span class="message" ng-bind-html="createLinks(message.value || '(No reply)')"></span>
+                </li>
               </ul>
               <div>
                 <form>
-                  Respond: 
-                  <input type="text" ng-model="newMessage.value">
-                  <button class="btn btn-sm btn-default" type="submit" ng-click="sendMessage(newMessage, job)">Send</button>
+                  <input type="text" ng-model="newMessage.value" style="width:calc(100% - 60px)">
+                  <button class="btn btn-sm btn-default" type="submit" ng-click="sendMessage(newMessage, job)">Reply</button>
                 </form>
               </div>
             </div>

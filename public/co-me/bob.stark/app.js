@@ -73,6 +73,7 @@ angular.module('counteroffer.me', ['ngCookies'])
     
     $scope.submitSurvey = function(obj) {
       var email = obj.email,
+          username = obj.username,
           jobs = obj.jobs,
           job = obj.job,
           saved = obj.saved;
@@ -86,6 +87,7 @@ angular.module('counteroffer.me', ['ngCookies'])
         } else {
           return $http.post('/jobs', {
             email: email,
+            username: username,
             jobs: [job]
           }).then(function() {
             location.reload();
@@ -98,6 +100,7 @@ angular.module('counteroffer.me', ['ngCookies'])
         }
         return $http.post('/jobs', {
           email: email,
+          username: username,
           jobs: jobs
         }).then(function() {
           location.reload();
@@ -186,7 +189,7 @@ angular.module('counteroffer.me', ['ngCookies'])
       }
     };
   }])
-  .directive('survey', ['$cookies', '$http', function($cookies, $http) {
+  .directive('survey', ['$cookies', '$http', '$sce', function($cookies, $http, $sce) {
     return {
       templateUrl: 'survey.html',
       scope: {
@@ -205,9 +208,11 @@ angular.module('counteroffer.me', ['ngCookies'])
             email: scope.savedEmail
           };
           $http.get('/jobs?email=' + scope.savedEmail).then(function(response) {
-            scope.jobs = response.data;
-            scope.currentJob = scope.jobs[0];
-            scope.newJob = false;
+            var data = response.data;
+            if (data && data.length > 0) {
+              scope.jobs = data;
+              scope.currentJob = scope.jobs[0];
+            }
           });
         }
         
@@ -240,7 +245,6 @@ angular.module('counteroffer.me', ['ngCookies'])
             return copyQuestion(msg);
           })});
           scope.currentJob = scope.jobs[scope.jobs.length - 1];
-          scope.newJob = true;
         };
         
         scope.$watch('messages', function() {
@@ -254,7 +258,6 @@ angular.module('counteroffer.me', ['ngCookies'])
           $http.delete('/jobs/' + scope.currentJob.id).then(function() {
             scope.jobs.splice(index, 1);
             scope.currentJob = scope.jobs[0];
-            scope.newJob = scope.jobs.some(function(job) { return !job.id; });
           });
         };
         
@@ -325,13 +328,18 @@ angular.module('counteroffer.me', ['ngCookies'])
           return 'panel-primary';
         };
         
+        var getUsername = function() {
+          // TODO: make dynamic once I add more people
+          return 'bob.stark';
+        };
+        
         scope.submit = function() {
           scope.state = 'busy';
-          var obj = {};
+          var obj = {username: getUsername()};
           if (scope.savedEmail) {
-            obj = {saved: true, job: scope.currentJob, email: scope.savedEmail};
+            angular.extend(obj, {saved: true, job: scope.currentJob, email: scope.savedEmail});
           } else {
-            obj = {email: scope.emailQuestion.value, jobs: scope.jobs, rememberMe: scope.emailQuestion.rememberMe};
+            angular.extend(obj, {email: scope.emailQuestion.value, jobs: scope.jobs, rememberMe: scope.emailQuestion.rememberMe});
           }
           return scope.submitFunc(obj).then(function() {
             scope.state = 'ok';
@@ -351,12 +359,19 @@ angular.module('counteroffer.me', ['ngCookies'])
           });
         };
         
-        scope.getMessageFilter = function() {
-          if (!scope.newJob) {
-            return function(message) {
-              return !!message.value;
-            };
+        scope.messageFilter = function(message) {
+          if (scope.currentJob && scope.currentJob.id) {
+            return !!message.value;
+          } else {
+            return true;
           }
+        };
+        
+        scope.createLinks = function(msg) {
+          if (msg) {
+            return $sce.trustAsHtml(msg.replace(/(https?:\/\/\S+)/, '<a href="$1" target="_blank">$1</a>'));
+          }
+          return msg;
         };
         
       }

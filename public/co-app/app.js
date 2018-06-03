@@ -169,4 +169,19 @@ angular.module('counteroffer.app', [
       }
       return msg;
     };
+    
+    $scope.getMessageStyle = function(job, sender) {
+      if (sender === job.email) { // recruiter: align left
+        return {
+          'text-align': 'left',
+          'padding': '5px'
+        };
+      } else { // candidate: align right
+        return {
+          'text-align': 'right',
+          'font-weight': 'bold',
+          'padding': '5px'
+        };
+      }
+    };
   }]);
