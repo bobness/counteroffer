@@ -22,7 +22,10 @@ const parseRefererForDomain = (referer) => {
 
 const server = http.createServer((req, res) => {
   if (req.headers.host.indexOf('portfolio.bobstark.me') > -1) {
-    return res.redirect('http://counteroffer.me/bob.stark');
+    res.writeHead(302, {
+      'Location': 'http://counteroffer.me/bob.stark'
+    });
+    return res.end();
   }
   let proxyTarget;
   if (req.headers.host.indexOf('localhost') > -1) {
