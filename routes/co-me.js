@@ -122,8 +122,7 @@ router.post('/jobs/:job_id/messages', (req, res, next) => {
       from: 'no-reply@conteroffer.me',
       to: email,
       subject: 'New message from ' + msg.sender,
-      text: `<strong>${msg.sender}</strong>: ${msg.value}\n
-        <a href="http://counteroffer.app/#!?job=${jobID}">View discussion</a>`
+      text: `${msg.value}\nView discussion: http://counteroffer.app/#!?job=${jobID}`
     }).then(() => {
       return res.json(msg);
     });
