@@ -1,5 +1,16 @@
 const express = require('express');
 const router = express.Router();
+const nodemailer = require('nodemailer');
+
+let transporter;
+router.use((req, res, next) => {
+  transporter = nodemailer.createTransport({
+    sendmail: true,
+    newline: 'unix',
+    path: '/usr/sbin/sendmail'
+  });
+  next();
+});
 
 /*
 router.get('/', function(req, res, next) {
@@ -107,8 +118,15 @@ router.post('/jobs/:job_id/messages', (req, res, next) => {
     values: [type, value, req.params.job_id, email]
   }).then((results) => {
     const msg = results.rows[0];
-    // TODO: email the candidate (i.e., me for now)
-    return res.json(msg);
+    return transporter.sendMail({
+      from: 'no-reply@conteroffer.me',
+      to: email,
+      subject: 'New message from ' + msg.sender,
+      text: `<strong>${msg.sender}</strong>: ${msg.value}\n
+        <a href="http://counteroffer.app/#!?job=${jobID}">View discussion</a>`
+    }).then(() => {
+      return res.json(msg);
+    });
   });
 });
 
