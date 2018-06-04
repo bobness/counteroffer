@@ -1,5 +1,16 @@
 const express = require('express');
 const router = express.Router();
+const nodemailer = require('nodemailer');
+
+let transporter;
+router.use((req, res, next) => {
+  transporter = nodemailer.createTransport({
+    sendmail: true,
+    newline: 'unix',
+    path: '/usr/sbin/sendmail'
+  });
+  next();
+});
 
 /*
 router.get('/', function(req, res, next) {
@@ -10,6 +21,7 @@ router.get('/', function(req, res, next) {
 router.post('/jobs', (req, res, next) => {
   const values = req.body,
         email = values.email,
+        username = values.username,
         jobs = values.jobs;
   return Promise.all(jobs.map((job) => {
     return req.client.query({
@@ -18,10 +30,18 @@ router.post('/jobs', (req, res, next) => {
     }).then((result) => {
       const newJob = result.rows[0];
       return job.messages.map((msg) => {
-        return req.client.query({
-          text: 'insert into messages (type, text, value, job_id) values($1::text, $2::text, $3::text, $4::bigint) returning *',
-          values: [msg.type, msg.text, msg.value, newJob.id]
-        });
+        return Promise.all([
+          // the 'question' message
+          req.client.query({
+            text: 'insert into messages (type, value, job_id, datetime, sender) values($1::text, $2::text, $3::bigint, NOW(), $4::text) returning *',
+            values: [msg.type, msg.text, newJob.id, username]
+          }),
+          // the 'answer' message
+          req.client.query({
+            text: 'insert into messages (type, value, job_id, datetime, sender) values($1::text, $2::text, $3::bigint, NOW(), $4::text) returning *',
+            values: [msg.type, msg.value, newJob.id, email]
+          })
+        ]);
       });
     });
   })).then(() => {
@@ -92,14 +112,21 @@ router.post('/jobs/:job_id/messages', (req, res, next) => {
   const type = 'text',
         msg = req.body,
         email = msg.email,
-        text = `Message from ${email}`,
         value = msg.value;
   return req.client.query({
-    text: 'insert into messages (type, text, value, job_id) values ($1::text, $2::text, $3::text, $4::bigint) returning *',
-    values: [type, text, value, req.params.job_id]
+    text: 'insert into messages (type, value, job_id, datetime, sender) values ($1::text, $2::text, $3::bigint, NOW(), $4::text) returning *',
+    values: [type, value, req.params.job_id, email]
   }).then((results) => {
     const msg = results.rows[0];
-    return res.json(msg);
+    return transporter.sendMail({
+      from: 'no-reply@conteroffer.me',
+      to: email,
+      subject: 'New message from ' + msg.sender,
+      text: `<strong>${msg.sender}</strong>: ${msg.value}\n
+        <a href="http://counteroffer.app/#!?job=${jobID}">View discussion</a>`
+    }).then(() => {
+      return res.json(msg);
+    });
   });
 });
 

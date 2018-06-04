@@ -5,6 +5,12 @@
   top: 15px;
 }
 
+.message {
+  background-color: #eee;
+  padding: 3px;
+  border-radius: 3px;
+}
+
 @media screen and (max-width: 600px) {
   #scratchPad {
     display: none !important;

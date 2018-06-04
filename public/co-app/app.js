@@ -6,8 +6,8 @@ angular.module('counteroffer.app', [
     editableOptions.theme = 'bs3';
   })
   .controller('controller', [
-    '$scope', '$http', '$timeout', '$q', '$cookies', '$sce',
-    function($scope, $http, $timeout, $q, $cookies, $sce) {
+    '$scope', '$http', '$timeout', '$q', '$cookies', '$sce', '$location',
+    function($scope, $http, $timeout, $q, $cookies, $sce, $location) {
     
     $scope.newJob = {
       email: '',
@@ -25,6 +25,13 @@ angular.module('counteroffer.app', [
       $scope.busy = true;
       $http.get('/jobs').then(function(response) {
         $scope.jobs = response.data;
+        var jobID = Number($location.search().job);
+        if (jobID) {
+          $scope.selectedJob = $scope.jobs.filter(function(job) { return job.id == jobID; })[0];
+          $timeout(function() {
+            $(`#collapse${jobID}`).collapse('show');            
+          });
+        }
       }).finally(() => {
         $scope.busy = false;
       });
@@ -45,7 +52,11 @@ angular.module('counteroffer.app', [
     };
     
     $scope.sendMessage = function(message, job) {
-      return $http.post('/jobs/' + job.id + '/messages', message).then(function(response) {
+      var body = {
+        message: message,
+        email: job.email
+      };
+      return $http.post('/jobs/' + job.id + '/messages', body).then(function(response) {
         var newMsg = response.data;
         job.messages.push(newMsg);
         $scope.newMessage.value = '';
@@ -69,6 +80,13 @@ angular.module('counteroffer.app', [
       $('#scratchPad').css('top', top);
     };
     
+    var loadJobURL = function(job) {
+      if (job) {
+        return $location.search('job', job.id);        
+      }
+      return $location.search('');
+    };
+    
     $scope.toggleJob = function(job) {
       $scope.jobs.forEach(function(job2) {
         if (job2 !== job && job2.selected) {
@@ -81,6 +99,9 @@ angular.module('counteroffer.app', [
       } else {
         $scope.selectedJob = null;
       }
+      $timeout(function() {
+        loadJobURL($scope.selectedJob);
+      });
     };
     
     $scope.$watch('selectedJob', function() {
@@ -168,5 +189,20 @@ angular.module('counteroffer.app', [
         return $sce.trustAsHtml(msg.replace(/(https?:\/\/\S+)/, '<a href="$1" target="_blank">$1</a>'));
       }
       return msg;
+    };
+    
+    $scope.getMessageStyle = function(job, sender) {
+      if (sender === job.email) { // recruiter: align left
+        return {
+          'text-align': 'left',
+          'padding': '5px'
+        };
+      } else { // candidate: align right
+        return {
+          'text-align': 'right',
+          'font-weight': 'bold',
+          'padding': '5px'
+        };
+      }
     };
   }]);

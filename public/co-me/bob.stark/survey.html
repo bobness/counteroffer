@@ -14,7 +14,7 @@
     </div>
     
     <div ng-show="state === 'busy'">
-      Sending email... <img src="loading.gif" />
+      <img src="loading.gif" />
     </div>
     <div ng-show="state === 'error'" class="panel-danger">
       Sorry, there was an error submitting this survey. Please notify Bob.
@@ -23,19 +23,24 @@
       <div class="panel question" ng-class="getPanelClass(emailQuestion)">
         <div class="panel-heading">Your email address: *</div>
         <div class="panel-body">
-          <span ng-show="!savedEmail || !currentJob.id">
+          <span ng-show="!savedEmail">
             <input type="text" ng-model="emailQuestion.value">
             <label>
-              <input type="checkbox" ng-model="emailQuestion.rememberMe">
+              <input type="checkbox" ng-model="emailQuestion.rememberMe" ng-show="!savedEmail">
               Remember me
             </label>
+            -- OR: 
+            <button class="btn btn-sm btn-default" ng-click="getJobs(emailQuestion)" ng-disabled="!emailQuestion.value">
+              <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+              Get Existing Jobs
+            </button>
           </span>
           <span ng-show="savedEmail">{{ savedEmail }}</span>
         </div>
       </div>
       <ul class="nav nav-pills" style="display:inline-block;">
         <li ng-repeat="job in jobs track by $index" ng-class="{active: jobIsSelected(job)}">
-          <a ng-click="selectJob(job)" style="cursor:pointer;">Job #{{ $index + 1 }}</a>
+          <a ng-click="loadJobURL(job)" style="cursor:pointer;">Job #{{ job.id }}</a>
         </li>
       </ul>
       <button class="btn btn-sm btn-default panel" ng-click="addJob()">
@@ -53,13 +58,13 @@
           Job #{{$index+1}}
         </div>
         <div class="panel-body">
-          <div class="panel question" ng-repeat="message in currentJob.messages | filter:getMessageFilter()" ng-class="getPanelClass(message)">
+          <div class="panel question" ng-repeat="message in currentJob.messages" ng-class="getPanelClass(message)">
             <div class="panel-heading">
-              {{ message.text }} {{ message.required ? '*' : '' }}
+              {{ message.text || message.sender }} {{ message.required ? '*' : '' }}
             </div>
             <div class="panel-body">
               <div ng-if="message.type === 'text'">
-                <span ng-show="savedEmail && currentJob.id">{{ message.value }}</span>
+                <span ng-show="savedEmail && currentJob.id" ng-bind-html="createLinks(message.value || '(No value)')"></span>
                 <input type="text" ng-model="message.value" ng-show="!savedEmail || !currentJob.id">
               </div>
               <div ng-if="message.type === 'skills'">
@@ -72,12 +77,12 @@
                 </div>
               </div>
               <div ng-if="message.type === 'textarea'">
-                <span ng-show="savedEmail && currentJob.id">{{ message.value }}</span>
+                <span ng-show="savedEmail && currentJob.id" ng-bind-html="createLinks(message.value || '(No value)')"></span>
                 <textarea style="width:500px;height:200px;" ng-model="message.value" ng-show="!savedEmail || !currentJob.id"></textarea>
               </div>
             </div>
           </div>
-          <div class="panel question panel-primary" ng-show="!newJob">
+          <div class="panel question panel-primary" ng-show="savedEmail && currentJob.id">
             <div class="panel-heading">
               Respond:
             </div>
@@ -93,7 +98,7 @@
     </div>
     
     <div>
-      <button class="btn btn-sm btn-default" ng-click="submit({data: data})" ng-show="newJob" ng-disabled="progress() !== 100">
+      <button class="btn btn-sm btn-default" ng-click="submit({data: data})" ng-show="currentJob && !currentJob.id" ng-disabled="progress() !== 100">
         <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
         Submit
       </button>
