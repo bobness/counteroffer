@@ -112,10 +112,11 @@ router.post('/jobs/:job_id/messages', (req, res, next) => {
   const type = 'text',
         msg = req.body,
         email = msg.email,
-        value = msg.value;
+        value = msg.value,
+        jobID = req.params.job_id;
   return req.client.query({
     text: 'insert into messages (type, value, job_id, datetime, sender) values ($1::text, $2::text, $3::bigint, NOW(), $4::text) returning *',
-    values: [type, value, req.params.job_id, email]
+    values: [type, value, jobID, email]
   }).then((results) => {
     const msg = results.rows[0];
     return transporter.sendMail({
