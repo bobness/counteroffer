@@ -64,7 +64,7 @@
           </button></form>
         </div>
         <div ng-repeat="job in jobs | orderBy: 'latest_msg' : true track by $index" ng-show="!busy" class="panel panel-default">
-          <div class="panel-heading" id="heading{{$index+1}}" data-toggle="collapse" data-target="#collapse{{$index+1}}" aria-expanded="false" aria-controls="collapse${$index+1}}" style="cursor:pointer;" ng-click="toggleJob(job)">
+          <div class="panel-heading" id="heading{{job.id}}" data-toggle="collapse" data-target="#collapse{{job.id}}" aria-expanded="false" aria-controls="collapse{{job.id}}" style="cursor:pointer;" ng-click="toggleJob(job)">
             <div style="float:right;clear:both;margin-top:-5px;" ng-show="jobs.length > 1">
               <button class="btn btn-sm btn-default panel" ng-click="deleteJob(job)">
                 <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
@@ -74,7 +74,7 @@
             Job #{{ job.id }} from {{ job.email }}
           </div>
       
-          <div id="collapse{{$index+1}}" class="collapse" aria-labelledby="heading{{$index+1}}" data-parent="#accordion">
+          <div id="collapse{{job.id}}" class="collapse" aria-labelledby="heading{{job.id}}" data-parent="#accordion">
             <div ng-show="gettingMessages">
               <img src="loading.gif" />
             </div>
