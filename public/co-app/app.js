@@ -88,18 +88,15 @@ angular.module('counteroffer.app', [
     };
     
     $scope.toggleJob = function(job) {
-      $scope.jobs.forEach(function(job2) {
-        if (job2 !== job && job2.selected) {
-          job.selected = false;
-        }
-      });
-      job.selected = !job.selected;
-      if (job.selected) {
-        $scope.selectedJob = job;
-      } else {
-        $scope.selectedJob = null;
-      }
       $timeout(function() {
+        $scope.jobs.forEach(function(job2) {
+          job2.selected = $(`#heading${job2.id}`).attr('aria-expanded') === "true";
+        });
+        if (job.selected) {
+          $scope.selectedJob = job;
+        } else {
+          $scope.selectedJob = null;
+        }
         loadJobURL($scope.selectedJob);
       });
     };
