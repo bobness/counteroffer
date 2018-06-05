@@ -35,7 +35,10 @@
               Get Existing Jobs
             </button>
           </span>
-          <span ng-show="savedEmail">{{ savedEmail }}</span>
+          <span ng-show="savedEmail">
+            {{ savedEmail }}
+            <button class="btn btn-sm btn-default" ng-click="removeCookie()">Change email address</button>
+          </span>
         </div>
       </div>
       <ul class="nav nav-pills" style="display:inline-block;">

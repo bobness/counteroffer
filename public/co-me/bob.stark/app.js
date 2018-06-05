@@ -392,6 +392,11 @@ angular.module('counteroffer.me', ['ngCookies'])
           scope.currentJob = job;
         };
         
+        scope.removeCookie = function() {
+          $cookies.remove('email');
+          location.reload();
+        }
+        
       }
     };
   }])
