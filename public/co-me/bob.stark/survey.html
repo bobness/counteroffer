@@ -62,7 +62,7 @@
             </div>
             <div class="panel-body">
               <div ng-if="message.type === 'text'">
-                <span ng-show="savedEmail && currentJob.id" ng-bind-html="createLinks(message.value || '(No value)')"></span>
+                <span ng-show="savedEmail && currentJob.id" ng-bind-html="getHTML(message.value || '(No value)')"></span>
                 <input type="text" ng-model="message.value" ng-show="!savedEmail || !currentJob.id">
               </div>
               <div ng-if="message.type === 'skills'">
@@ -75,7 +75,7 @@
                 </div>
               </div>
               <div ng-if="message.type === 'textarea'">
-                <span ng-show="savedEmail && currentJob.id" ng-bind-html="createLinks(message.value || '(No value)')"></span>
+                <span ng-show="savedEmail && currentJob.id" ng-bind-html="getHTML(message.value || '(No value)')"></span>
                 <textarea style="width:500px;height:200px;" ng-model="message.value" ng-show="!savedEmail || !currentJob.id"></textarea>
               </div>
             </div>
@@ -86,7 +86,7 @@
             </div>
             <div class="panel-body">
               <form>
-                <input type="text" ng-model="newMessage.value">
+                <textarea ng-model="newMessage.value" style="width:calc(100% - 60px)"></textarea>
                 <button class="btn btn-sm btn-default" type="submit" ng-click="sendMessage(newMessage, currentJob)">Send</button>
               </form>
             </div>

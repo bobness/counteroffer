@@ -81,12 +81,12 @@
             <div class="panel-body" ng-hide="gettingMessages">
               <ul class="list-unstyled" style="clear:both;">
                 <li ng-repeat="message in job.messages" ng-style="getMessageStyle(job, message.sender)">
-                  <span class="message" ng-bind-html="createLinks(message.value || '(No reply)')"></span>
+                  <span class="message" ng-bind-html="getHTML(message.value || '(No reply)')"></span>
                 </li>
               </ul>
               <div>
                 <form>
-                  <input type="text" ng-model="newMessage.value" style="width:calc(100% - 60px)">
+                  <textarea ng-model="newMessage.value" style="width:calc(100% - 60px)"></textarea>
                   <button class="btn btn-sm btn-default" type="submit" ng-click="sendMessage(newMessage, job)">Reply</button>
                 </form>
               </div>

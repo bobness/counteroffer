@@ -371,9 +371,11 @@ angular.module('counteroffer.me', ['ngCookies'])
           }
         };
         
-        scope.createLinks = function(msg) {
+        scope.getHTML = function(msg) {
           if (msg) {
-            return $sce.trustAsHtml(msg.replace(/(https?:\/\/\S+)/, '<a href="$1" target="_blank">$1</a>'));
+            msg = msg.replace(/(https?:\/\/\S+)/g, '<a href="$1" target="_blank">$1</a>');
+            msg = msg.replace(/\n/g, '<br>');
+            return $sce.trustAsHtml(msg);
           }
           return msg;
         };
