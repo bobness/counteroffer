@@ -54,7 +54,7 @@ router.post('/jobs', (req, res, next) => {
 });
 
 router.get('/jobs', function(req, res, next) {
-  return req.client.query({text: 'select j.*, m.* from jobs j inner join (select job_id, max(datetime) as latest_msg from messages group by job_id) m on m.job_id=j.id'}).then((results) => {
+  return req.client.query({text: 'select j.*, m.* from jobs j left outer join (select job_id, max(datetime) as latest_msg from messages group by job_id) m on m.job_id=j.id'}).then((results) => {
     req.client.end();
     return res.json(results.rows);
   });
