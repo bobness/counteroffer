@@ -202,7 +202,6 @@ angular.module('counteroffer.app', [
       } else { // candidate: align right
         return {
           'text-align': 'right',
-          'font-weight': 'bold',
           'padding': '5px'
         };
       }
