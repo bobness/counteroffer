@@ -98,10 +98,7 @@ angular.module('counteroffer.me', ['ngCookies'])
           });
         }
       } else {
-        var rememberMe = obj.rememberMe;
-        if (rememberMe) {
-          $cookies.put('email', email);
-        }
+        $cookies.put('email', email);
         return $http.post('/jobs', {
           email: email,
           username: username,
@@ -346,7 +343,7 @@ angular.module('counteroffer.me', ['ngCookies'])
           if (scope.savedEmail) {
             angular.extend(obj, {saved: true, job: scope.currentJob, email: scope.savedEmail});
           } else {
-            angular.extend(obj, {email: scope.emailQuestion.value, jobs: scope.jobs, rememberMe: scope.emailQuestion.rememberMe});
+            angular.extend(obj, {email: scope.emailQuestion.value, jobs: scope.jobs});
           }
           return scope.submitFunc(obj).then(function() {
             scope.state = 'ok';

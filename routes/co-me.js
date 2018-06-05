@@ -20,7 +20,7 @@ router.get('/', function(req, res, next) {
 
 router.post('/jobs', (req, res, next) => {
   const values = req.body,
-        email = values.email,
+        email = values.email.toLowerCase(),
         username = values.username,
         jobs = values.jobs;
   return Promise.all(jobs.map((job) => {
@@ -51,7 +51,7 @@ router.post('/jobs', (req, res, next) => {
 });
 
 router.get('/jobs', (req, res, next) => {
-  const email = req.query.email;
+  const email = req.query.email.toLowerCase();
   let jobs = [];
   return req.client.query({
     text: 'select * from jobs where email = $1::text',
@@ -111,7 +111,7 @@ router.delete('/jobs/:job_id', (req, res, next) => {
 router.post('/jobs/:job_id/messages', (req, res, next) => {
   const type = 'text',
         msg = req.body,
-        email = msg.email,
+        email = msg.email.toLowerCase(),
         value = msg.value,
         jobID = req.params.job_id;
   return req.client.query({
