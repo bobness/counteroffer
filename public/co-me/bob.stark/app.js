@@ -190,7 +190,8 @@ angular.module('counteroffer.me', ['ngCookies'])
       }
     };
   }])
-  .directive('survey', ['$cookies', '$http', '$sce', '$location', function($cookies, $http, $sce, $location) {
+  .directive('survey', ['$cookies', '$http', '$sce', '$location', '$anchorScroll', 
+  function($cookies, $http, $sce, $location, $anchorScroll) {
     return {
       templateUrl: 'survey.html',
       scope: {
@@ -223,6 +224,8 @@ angular.module('counteroffer.me', ['ngCookies'])
             }
           });
         }
+        
+        $anchorScroll('survey');
         
         scope.jobIsSelected = function(job) {
           if (!scope.currentJob) {
@@ -388,6 +391,9 @@ angular.module('counteroffer.me', ['ngCookies'])
         
         scope.loadJobURL = function(job) {
           $location.search('job', job.id);
+          if (job) {
+            $anchorScroll('survey');
+          }
           scope.currentJob = job;
         };
         

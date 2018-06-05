@@ -6,8 +6,8 @@ angular.module('counteroffer.app', [
     editableOptions.theme = 'bs3';
   })
   .controller('controller', [
-    '$scope', '$http', '$timeout', '$q', '$cookies', '$sce', '$location',
-    function($scope, $http, $timeout, $q, $cookies, $sce, $location) {
+    '$scope', '$http', '$timeout', '$q', '$cookies', '$sce', '$location', '$anchorScroll',
+    function($scope, $http, $timeout, $q, $cookies, $sce, $location, $anchorScroll) {
     
     $scope.newJob = {
       email: '',
@@ -29,7 +29,8 @@ angular.module('counteroffer.app', [
         if (jobID) {
           $scope.selectedJob = $scope.jobs.filter(function(job) { return job.id == jobID; })[0];
           $timeout(function() {
-            $(`#collapse${jobID}`).collapse('show');            
+            $(`#collapse${jobID}`).collapse('show');
+            $anchorScroll(`heading${jobID}`);
           });
         }
       }).finally(() => {
