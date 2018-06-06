@@ -52,25 +52,29 @@
       </form>
     </div>
     <div class="col-lg-12" style="margin: 0 auto;text-align:center;" ng-show="jobs">
+      <div style="display:block;margin:auto;">
+        <ul class="nav nav-pills" style="margin-bottom:10px;display:inline-block;">
+          <li ng-class="{active: !path}">
+            <a ng-click="setPath('')" style="cursor:pointer;">Active</a>
+          </li>
+          <li ng-class="{active: path === 'archived'}">
+            <a ng-click="setPath('archived')" style="cursor:pointer;">Archived</a>
+          </li>
+        </ul>
+      </div>
       <div class="col-sm-8" id="accordion" style="margin-top:15px;">
         <div ng-show="!jobs || jobs.length === 0">
           There are no jobs yet. Wait until you get an offer from a recruiter. 
         </div>
-        <div style="text-align:center;margin:10px;">
+        <div style="text-align:center;margin:10px;" ng-show="!path">
           <form><input type="text" ng-model="newJob.email" placeholder="Recruiter email">
           <button class="btn btn-sm btn-default" type="submit" ng-click="addJob(newJob)">
             <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
             Add Job
           </button></form>
         </div>
-        <div ng-repeat="job in jobs | orderBy: 'latest_msg' : true track by $index" ng-show="!busy" class="panel panel-default">
+        <div ng-repeat="job in jobs | filter: getJobFilter(path === 'archived') | orderBy: 'latest_msg' : true track by $index" ng-show="!busy" class="panel panel-default">
           <div class="panel-heading" id="heading{{job.id}}" data-toggle="collapse" data-target="#collapse{{job.id}}" aria-expanded="false" aria-controls="collapse{{job.id}}" style="cursor:pointer;" ng-click="toggleJob(job)">
-            <div style="float:right;clear:both;margin-top:-5px;" ng-show="jobs.length > 1">
-              <button class="btn btn-sm btn-default panel" ng-click="deleteJob(job)">
-                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                Delete Job
-              </button>
-            </div>
             Job #{{ job.id }} from {{ job.email }}
           </div>
       
@@ -84,11 +88,26 @@
                   <span class="message" ng-bind-html="getHTML(message.value || '(No reply)')"></span>
                 </li>
               </ul>
-              <div>
-                <form>
-                  <textarea ng-model="newMessage.value" style="width:calc(100% - 60px)"></textarea>
-                  <button class="btn btn-sm btn-default" type="submit" ng-click="sendMessage(newMessage, job)">Reply</button>
+              <div style="height:100px;margin:10px;" ng-show="!path">
+                <form style="height:100%">
+                  <textarea ng-model="newMessage.value" style="width:calc(100% - 80px);height:100%;"></textarea>
+                  <div style="float:right;width:80px;">
+                    <button class="btn btn-sm btn-default" ng-click="sendMessage(newMessage, job)" style="margin:10px;">
+                      <span class="glyphicon glyphicon-upload" aria-hidden="true"></span>
+                      Reply
+                    </button>
+                    <button class="btn btn-sm btn-default panel" ng-click="archiveJob(newMessage, job)" style="margin:10px;">
+                      <span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
+                      Decline
+                    </button>
+                  </div>
                 </form>
+              </div>
+              <div style="clear:both;" ng-show="jobs.length > 1">
+                <button class="btn btn-sm btn-default panel" ng-click="deleteJob(job)">
+                  <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                  Delete Job
+                </button>
               </div>
             </div>
           </div>

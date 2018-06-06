@@ -8,6 +8,13 @@ angular.module('counteroffer.app', [
   .controller('controller', [
     '$scope', '$http', '$timeout', '$q', '$cookies', '$sce', '$location', '$anchorScroll',
     function($scope, $http, $timeout, $q, $cookies, $sce, $location, $anchorScroll) {
+      
+    $scope.path = $location.path().substr(1);
+    
+    $scope.setPath = function(path) {
+      $location.path(path);
+      $scope.path = path;
+    };
     
     $scope.newJob = {
       email: '',
@@ -52,10 +59,11 @@ angular.module('counteroffer.app', [
       });
     };
     
-    $scope.sendMessage = function(message, job) {
+    $scope.sendMessage = function(message, job, archive) {
       var body = {
         message: message,
-        email: job.email
+        email: job.email,
+        archive: archive || false
       };
       return $http.post('/jobs/' + job.id + '/messages', body).then(function(response) {
         var newMsg = response.data;
@@ -64,12 +72,25 @@ angular.module('counteroffer.app', [
       });
     };
     
+    $scope.archiveJob = function(message, job) {
+      job.archived = true;
+      return $scope.sendMessage(message, job, true).then(function() {
+        $scope.toggleJob(job);
+      });
+    };
+    
     $scope.deleteJob = function(job) {
       var index = $scope.jobs.indexOf(job);
-      $http.delete('/jobs/' + job.id).then(function() {
+      return $http.delete('/jobs/' + job.id).then(function() {
         $scope.jobs.splice(index, 1);
         $scope.selectedJob = null;
       });
+    };
+    
+    $scope.getJobFilter = function(archiveValue) {
+      return function(job) {
+        return job.archived === archiveValue;
+      };
     };
     
     var moveScratchPad = function() {

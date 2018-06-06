@@ -114,11 +114,17 @@ router.post('/jobs/:job_id/messages', (req, res, next) => {
         email = msg.email.toLowerCase(),
         value = msg.value,
         jobID = req.params.job_id;
-  return req.client.query({
+  const promises = [];
+  promises.push(req.client.query({
     text: 'insert into messages (type, value, job_id, datetime, sender) values ($1::text, $2::text, $3::bigint, NOW(), $4::text) returning *',
     values: [type, value, jobID, email]
-  }).then((results) => {
-    const msg = results.rows[0];
+  }));
+  promises.push(req.client.query({
+    text: 'update jobs set archived = $1::boolean where id = $2::bigint',
+    values: [false, jobID]
+  }));
+  Promise.all(promises).then((results) => {
+    const msg = results[0].rows[0];
     return transporter.sendMail({
       from: 'no-reply@conteroffer.me',
       to: 'bob@bobstark.me', // TODO: link candidates with email addresses
