@@ -93,6 +93,10 @@ angular.module('counteroffer.app', [
       };
     };
     
+    $scope.sortByDate = function(job) {
+      return new Date(job.latest_msg);
+    };
+    
     var moveScratchPad = function() {
       var $elem = $('.panel-heading[aria-expanded="true"');
       var top = 15;

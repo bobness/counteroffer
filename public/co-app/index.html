@@ -84,7 +84,7 @@
             </div>
             <div class="panel-body" ng-hide="gettingMessages">
               <ul class="list-unstyled" style="clear:both;">
-                <li ng-repeat="message in job.messages" ng-style="getMessageStyle(job, message.sender)">
+                <li ng-repeat="message in job.messages | orderBy: 'datetime'" ng-style="getMessageStyle(job, message.sender)">
                   <span class="message" ng-bind-html="getHTML(message.value || '(No reply)')"></span>
                 </li>
               </ul>

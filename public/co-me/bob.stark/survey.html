@@ -56,7 +56,7 @@
           Job #{{$index+1}}
         </div>
         <div class="panel-body">
-          <div class="panel question" ng-repeat="message in currentJob.messages" ng-class="getPanelClass(message)">
+          <div class="panel question" ng-repeat="message in currentJob.messages | orderBy: 'datetime'" ng-class="getPanelClass(message)">
             <div class="panel-heading">
               {{ message.text || message.sender }} {{ message.required ? '*' : '' }}
             </div>
