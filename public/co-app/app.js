@@ -66,8 +66,10 @@ angular.module('counteroffer.app', [
         archive: archive || false
       };
       return $http.post('/jobs/' + job.id + '/messages', body).then(function(response) {
-        var newMsg = response.data;
-        job.messages.push(newMsg);
+        if (message) {
+          var newMsg = response.data;
+          job.messages.push(newMsg); 
+        }
         $scope.newMessage.value = '';
       });
     };
@@ -75,7 +77,7 @@ angular.module('counteroffer.app', [
     $scope.archiveJob = function(message, job) {
       job.archived = true;
       return $scope.sendMessage(message, job, true).then(function() {
-        $scope.toggleJob(job);
+        $scope.setPath('archived');
       });
     };
     
@@ -91,10 +93,6 @@ angular.module('counteroffer.app', [
       return function(job) {
         return job.archived === archiveValue;
       };
-    };
-    
-    $scope.sortByDate = function(job) {
-      return new Date(job.latest_msg);
     };
     
     var moveScratchPad = function() {

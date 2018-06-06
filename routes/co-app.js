@@ -90,10 +90,12 @@ router.post('/jobs/:job_id/messages', (req, res, next) => {
         value = msg.value,
         jobID = req.params.job_id;
   const promises = [];
-  promises.push(req.client.query({
-    text: 'insert into messages (type, value, job_id, datetime, sender) values ($1::text, $2::text, $3::bigint, NOW(), $4::text) returning *',
-    values: [type, value, jobID, username]
-  }));
+  if (value) {
+    promises.push(req.client.query({
+      text: 'insert into messages (type, value, job_id, datetime, sender) values ($1::text, $2::text, $3::bigint, NOW(), $4::text) returning *',
+      values: [type, value, jobID, username]
+    }));
+  }
   if (archive) {
     promises.push(req.client.query({
       text: 'update jobs set archived = $1::boolean where id = $2::bigint',
@@ -102,14 +104,18 @@ router.post('/jobs/:job_id/messages', (req, res, next) => {
   }
   Promise.all(promises).then((results) => {
     const msg = results[0].rows[0];
-    return transporter.sendMail({
-      from: 'no-reply@conteroffer.me',
-      to: email,
-      subject: 'New message from ' + msg.sender,
-      text: `${msg.value}\nView discussion: http://counteroffer.me/${username}/#!/contact?job=${jobID}`
-    }).then(() => {
-      return res.json(msg);
-    });
+    if (msg) {
+      return transporter.sendMail({
+        from: 'no-reply@conteroffer.me',
+        to: email,
+        subject: 'New message from ' + msg.sender,
+        text: `${msg.value}\nView discussion: http://counteroffer.me/${username}/#!/contact?job=${jobID}`
+      }).then(() => {
+        return res.json(msg);
+      });
+    } else {
+      return res.sendStatus(200);
+    }
   });
 });
 
