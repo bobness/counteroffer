@@ -126,7 +126,7 @@ router.post('/jobs/:job_id/messages', (req, res, next) => {
   Promise.all(promises).then((results) => {
     const msg = results[0].rows[0];
     return transporter.sendMail({
-      from: 'no-reply@conteroffer.me',
+      from: 'no-reply@counteroffer.me',
       to: 'bob@bobstark.me', // TODO: link candidates with email addresses
       subject: 'New message from ' + msg.sender,
       text: `${msg.value}\nView discussion: http://counteroffer.io/#!?job=${jobID}`

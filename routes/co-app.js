@@ -106,7 +106,7 @@ router.post('/jobs/:job_id/messages', (req, res, next) => {
     const msg = results[0].rows[0];
     if (msg) {
       return transporter.sendMail({
-        from: 'no-reply@conteroffer.me',
+        from: 'no-reply@counteroffer.me',
         to: email,
         subject: 'New message from ' + msg.sender,
         text: `${msg.value}\nView discussion: http://counteroffer.me/${username}/#!/contact?job=${jobID}`
