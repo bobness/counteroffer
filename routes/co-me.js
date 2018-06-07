@@ -29,24 +29,33 @@ router.post('/jobs', (req, res, next) => {
       values: [email]
     }).then((result) => {
       const newJob = result.rows[0];
+      job.id = newJob.id;
       return job.messages.map((msg) => {
         return Promise.all([
           // the 'question' message
           req.client.query({
-            text: 'insert into messages (type, value, job_id, datetime, sender) values($1::text, $2::text, $3::bigint, NOW(), $4::text) returning *',
-            values: [msg.type, msg.text, newJob.id, username]
+            text: 'insert into messages (type, value, job_id, datetime, sender) values($1::text, $2::text, $3::bigint, NOW(), $4::text)',
+            values: [msg.type, msg.text, job.id, username]
           }),
           // the 'answer' message
           req.client.query({
-            text: 'insert into messages (type, value, job_id, datetime, sender) values($1::text, $2::text, $3::bigint, NOW(), $4::text) returning *',
-            values: [msg.type, msg.value, newJob.id, email]
+            text: 'insert into messages (type, value, job_id, datetime, sender) values($1::text, $2::text, $3::bigint, NOW(), $4::text)',
+            values: [msg.type, msg.value, job.id, email]
           })
         ]);
       });
     });
   })).then(() => {
     // req.client.end() // throws an error?
-    return res.sendStatus(200);
+    return Promise.all(jobs.filter((job) => job.id).map((job) => {
+      const jobText = job.messages.map((msg) => `${msg.text}: ${msg.value}`).join('\n');
+      return transporter.sendMail({
+        from: 'no-reply@counteroffer.me',
+        to: 'bob@bobstark.me', // TODO: link candidates with email addresses
+        subject: 'New job from ' + email,
+        text: `${jobText}\nView discussion: http://counteroffer.io/#!?job=${job.id}`
+      });
+    })).then(() => res.sendStatus(200));
   });
 });
 

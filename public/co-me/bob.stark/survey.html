@@ -38,7 +38,7 @@
       </div>
       <ul class="nav nav-pills" style="display:inline-block;">
         <li ng-repeat="job in jobs track by $index" ng-class="{active: jobIsSelected(job)}">
-          <a ng-click="loadJobURL(job)" style="cursor:pointer;">Job #{{ job.id }}</a>
+          <a ng-click="loadJobURL(job)" style="cursor:pointer;">{{ job.id ? 'Job #' + job.id : 'New Job' }}</a>
         </li>
       </ul>
       <button class="btn btn-sm btn-default panel" ng-click="addJob()">
@@ -53,7 +53,7 @@
               Delete Job
             </button>
           </div>
-          Job #{{$index+1}}
+          {{ currentJob.id ? 'Job #' + currentJob.id : 'New Job' }}
         </div>
         <div class="panel-body">
           <div class="panel question" ng-repeat="message in currentJob.messages | orderBy: 'datetime'" ng-class="getPanelClass(message)">
