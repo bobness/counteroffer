@@ -11,6 +11,25 @@
   border-radius: 3px;
 }
 
+.tag-list {
+  border: 1px dark gray;
+  cursor: text;
+  padding: 1px;
+}
+
+.tag-item {
+  margin: 2px;
+  padding: 0 5px;
+  display: inline-block;
+  font: 14px "Helvetica Neue", Helvetica, Arial, sans-serif;
+  height: 26px;
+  line-height: 25px;
+  border-radius: 3px;
+/*   background-color: #337ab7; */
+  color: white;
+  font-weight: bold;
+}
+
 @media screen and (max-width: 600px) {
   #scratchPad {
     display: none !important;

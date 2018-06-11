@@ -29,16 +29,17 @@
       use cases:
         x - track jobs - for 1 core counteroffer
         
-        - respond to recruiter (i.e., add message to job 'message') - for 1 core counteroffer
-          x - enable replying on co.app
-          x - show replies on co.me contact page
-          x - add datetime to message entries if not already there
-          - email me/recruiter on new messages
-          - re-add emailing myself when I get a new contact, w/ a link to the job (involves parsing the path or hash for the job ID and selecting that job)
+        x - respond to recruiter (i.e., add message to job 'message') - for 1 core counteroffer
+        
+        - track jobs better (co.app)
+          x - show facts on each job widget when it's collapsed (tags?)
+          x - support sorting by facts (e.g., salary)
+          - promote the header to uniquely identify it (e.g., company)
         
         - publish multiple counteroffers to counteroffer.me
-          - merge portfolio-creator (via npm install) onto this interface (I think?)
+          - merge portfolio-creator (via npm install) onto this interface
           - create another table 'counteroffers' and link to 'jobs'
+          - scrape from LinkedIn to import resume? or would importing a PDF/doc(x) be easier? - to get Ryan onto the platform
         
         - list jobs/discussions per counteroffer
           - consider adding a tab UI to co.app to show them
@@ -66,16 +67,32 @@
         <div ng-show="!jobs || jobs.length === 0">
           There are no jobs yet. Wait until you get an offer from a recruiter. 
         </div>
-        <div style="text-align:center;margin:10px;" ng-show="!path">
-          <form><input type="text" ng-model="newJob.email" placeholder="Recruiter email">
-          <button class="btn btn-sm btn-default" type="submit" ng-click="addJob(newJob)">
-            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-            Add Job
-          </button></form>
+        <div ng-show="jobs.length > 0">
+          Sort by: <ul class="tag-list">
+            <li class="tag-item" ng-click="sortByFactKey('')" style="cursor:pointer;color:black;">Latest Message</li>
+          	<li ng-repeat="(key, class) in factClasses track by $index" class="tag-item {{ class }}" ng-click="sortByFactKey(key)" style="cursor:pointer;">
+          	  {{ key }}
+            </li>
+          </ul>
         </div>
-        <div ng-repeat="job in jobs | filter: getJobFilter(path === 'archived') | orderBy: 'latest_msg' : true track by $index" ng-show="!busy" class="panel panel-default">
+        <div style="text-align:center;margin:10px;" ng-show="!path">
+          <div>
+            <form><input type="text" ng-model="newJob.email" placeholder="Recruiter email">
+            <button class="btn btn-sm btn-default" type="submit" ng-click="addJob(newJob)">
+              <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+              Add Job
+            </button></form>
+          </div>
+        </div>
+        <div ng-repeat="job in jobs | filter: getJobFilter(path === 'archived') | orderBy: sortJobs() : true track by $index" ng-show="!busy" class="panel panel-default">
           <div class="panel-heading" id="heading{{job.id}}" data-toggle="collapse" data-target="#collapse{{job.id}}" aria-expanded="false" aria-controls="collapse{{job.id}}" style="cursor:pointer;" ng-click="toggleJob(job)">
-            Job #{{ job.id }} from {{ job.email }}
+            <p>Job #{{ job.id }} from {{ job.email }} 
+              <a href="#" editable-text="job.company" onaftersave="updateJob(job)">({{ job.company || 'Company name' }})</a>
+            </p>
+            <p>Latest message: {{ job.latest_msg }}</p>
+            <ul class="tag-list">
+            	<li class="tag-item" ng-repeat="fact in job.facts track by $index" ng-class="getFactClass(fact.key)">{{ fact.value }}</li>
+            </ul>
           </div>
       
           <div id="collapse{{job.id}}" class="collapse" aria-labelledby="heading{{job.id}}" data-parent="#accordion">
@@ -141,7 +158,12 @@
                   <td><a href="#" editable-text="fact.value" onaftersave="updateFact(selectedJob, fact)">
                     {{ fact.value }}
                   </a></td>
-                  <td>Delete</td>
+                  <td>
+                    <button class="btn btn-sm btn-default panel" ng-click="deleteFact(selectedJob, fact)">
+                      <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                      Delete
+                    </button>
+                  </td>
                 </tr>
               </tbody>
             </table>

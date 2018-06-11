@@ -21,6 +21,20 @@ angular.module('counteroffer.app', [
       messages: []
     };
     
+    var refreshFactClasses = function(jobs) {
+      return jobs.reduce(function(keyClasses, job) {
+        if (job.facts) {
+          job.facts.map(function(fact) { return fact.key; }).forEach(function(key) {
+            if (!keyClasses[key]) {
+              keyClasses[key] = cssClasses[currentCssClassIndex];
+              currentCssClassIndex = (currentCssClassIndex + 1) % cssClasses.length;
+            }
+          });
+        }
+        return keyClasses;
+      }, {});
+    };
+    
     var username = $cookies.get('username'),
         session = $cookies.get('session');
     if (username && session) {
@@ -32,7 +46,10 @@ angular.module('counteroffer.app', [
       $scope.busy = true;
       $http.get('/jobs').then(function(response) {
         $scope.jobs = response.data;
-        var jobID = Number($location.search().job);
+        $scope.factClasses = refreshFactClasses($scope.jobs);
+        var params = $location.search();
+        var jobID = Number(params.job);
+        sortByKey = params.sort;
         if (jobID) {
           $scope.selectedJob = $scope.jobs.filter(function(job) { return job.id == jobID; })[0];
           $timeout(function() {
@@ -190,12 +207,22 @@ angular.module('counteroffer.app', [
           job.facts = [];
         }
 	    	job.facts.push(fact);
+	    	$scope.factClasess = refreshFactClasses($scope.jobs);
       });
     };
     
     $scope.updateFact = function(job, fact) {
-      return $http.put('/jobs/' + job.id + '/facts/' + fact.id, fact);
+      return $http.put('/jobs/' + job.id + '/facts/' + fact.id, fact).then(function() {
+        $scope.factClasess = refreshFactClasses($scope.jobs);
+      });
     };
+    
+    $scope.deleteFact = function(job, fact) {
+      return $http.delete('/jobs/' + job.id + '/facts/' + fact.id).then(function() {
+        job.facts = job.facts.filter(function(f) { return f !== fact; });
+        $scope.factClasess = refreshFactClasses($scope.jobs);
+      });
+    }
     
     $scope.addJob = function(job) {
       return $http.post('/jobs', $scope.newJob).then(function(response) {
@@ -203,6 +230,10 @@ angular.module('counteroffer.app', [
         $scope.newJob.email = '';
         $scope.jobs.unshift(newJob);
       });
+    };
+    
+    $scope.updateJob = function(job) {
+      return $http.put('/jobs/' + job.id, job);
     };
     
     $scope.getHTML = function(msg) {
@@ -224,6 +255,48 @@ angular.module('counteroffer.app', [
         return {
           'text-align': 'right',
           'padding': '5px'
+        };
+      }
+    };
+    
+    var cssClasses = [
+      'label label-primary',
+      'label label-danger',
+      'label label-success',
+      'label label-default',
+      'label label-warning'
+    ];
+    var currentCssClassIndex = 0; // for round-robin usage of classes
+    
+    $scope.getFactClass = function(factKey) {
+      return $scope.factClasses[factKey] || 'label';
+    };
+    
+    var sortByKey = null;
+    
+    $scope.sortByFactKey = function(key) {
+      if (key) {
+        $location.search('sort', key);
+        sortByKey = key;
+      } else {
+        $location.search('sort', null);
+        sortByKey = null;
+      }
+    };
+    
+    $scope.sortJobs = function() {
+      if (sortByKey) {
+        // TODO
+        return function(job) {
+          var fact = job.facts.filter(function(fact) { return fact.key === sortByKey; })[0];
+          if (fact) {
+            return fact.value;
+          }
+          return "";
+        };
+      } else {
+        return function(job) {
+          return job.latest_msg;
         };
       }
     };

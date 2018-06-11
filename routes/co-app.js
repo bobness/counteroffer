@@ -40,6 +40,20 @@ router.get('/', function(req, res, next) {
 });
 */
 
+const getMessagesFromJobID = (client, jobID ) => {
+  return client.query({
+  	text: 'select * from messages where job_id = $1::bigint',
+  	values: [jobID]
+  });
+};
+
+const getFactsFromJobID = (client, jobID) => {
+  return client.query({
+    text: 'select * from facts where job_id = $1::bigint',
+    values: [jobID]
+  });
+};
+
 router.post('/jobs', (req, res, next) => {
   const job = req.body,
         email = job.email;
@@ -54,9 +68,41 @@ router.post('/jobs', (req, res, next) => {
 });
 
 router.get('/jobs', function(req, res, next) {
-  return req.client.query({text: 'select j.*, m.* from jobs j left outer join (select job_id, max(datetime) as latest_msg from messages group by job_id) m on m.job_id=j.id'}).then((results) => {
+  return req.client.query({
+    text: `select j.*, m.latest_msg, f.key, f.value from jobs j 
+      left outer join (select job_id, max(datetime) as latest_msg from messages group by job_id) m on m.job_id=j.id
+      left outer join facts f on f.job_id=j.id`
+  }).then((results) => {
+    const jobObj = {};
+    results.rows.forEach((job) => {
+      if (!jobObj[job.id]) {
+        jobObj[job.id] = {
+          id: job.id,
+          email: job.email,
+          archived: job.archived,
+          company: job.company,
+          latest_msg: job.latest_msg,
+          facts: []
+        };
+      }
+      if (job.key && job.value) {
+        jobObj[job.id].facts.push({key: job.key, value: job.value});
+      }
+    });
+    const jobs = Object.keys(jobObj).map((key) => jobObj[key]);
     req.client.end();
-    return res.json(results.rows);
+    return res.json(jobs);
+  });
+});
+
+router.put('/jobs/:job_id', (req, res, next) => {
+  const job = req.body;
+  return req.client.query({
+    text: 'update jobs set company = $1::text where id=$2::bigint',
+    values: [job.company, req.params.job_id]
+  }).then(() => {
+    req.client.end();
+    res.sendStatus(200);
   });
 });
 
@@ -120,20 +166,14 @@ router.post('/jobs/:job_id/messages', (req, res, next) => {
 });
 
 router.get('/jobs/:job_id/messages', (req, res, next) => {
-	return req.client.query({
-  	text: 'select * from messages where job_id = $1::bigint',
-  	values: [req.params.job_id]
-  }).then((results) => {
+	return getMessagesFromJobID(req.client, req.params.job_id).then((results) => {
     req.client.end();
     return res.json(results.rows);
   });
 });
 
 router.get('/jobs/:job_id/facts', (req, res, next) => {
-  return req.client.query({
-    text: 'select * from facts where job_id = $1::bigint',
-    values: [Number(req.params.job_id)]
-  }).then((results) => {
+  return getFactsFromJobID(req.client, req.params.job_id).then((results) => {
     req.client.end();
     return res.json(results.rows);
   });
@@ -162,6 +202,16 @@ router.put('/jobs/:job_id/facts/:fact_id', (req, res, next) => {
     req.client.end();
     return res.sendStatus(200);
   });
+});
+
+router.delete('/jobs/:job_id/facts/:fact_id', (req, res, next) => {
+  return req.client.query({
+    text: 'delete from facts where id=$1::bigint and job_id=$2::bigint',
+    values: [req.params.fact_id, req.params.job_id]
+  }).then(() => {
+    req.client.end();
+    return res.sendStatus(200);
+  })
 });
 
 router.post('/session', (req, res, next) => {
