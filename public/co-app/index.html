@@ -31,10 +31,7 @@
         
         x - respond to recruiter (i.e., add message to job 'message') - for 1 core counteroffer
         
-        - track jobs better (co.app)
-          x - show facts on each job widget when it's collapsed (tags?)
-          x - support sorting by facts (e.g., salary)
-          - promote the header to uniquely identify it (e.g., company)
+        x - track jobs better by organizing them by facts (co.app)
         
         - publish multiple counteroffers to counteroffer.me
           - merge portfolio-creator (via npm install) onto this interface
@@ -89,7 +86,7 @@
             <p>Job #{{ job.id }} from {{ job.email }} 
               <a href="#" editable-text="job.company" onaftersave="updateJob(job)">({{ job.company || 'Company name' }})</a>
             </p>
-            <p>Latest message: {{ job.latest_msg }}</p>
+            <p>Latest message: {{ displayDate(job) }}</p>
             <ul class="tag-list">
             	<li class="tag-item" ng-repeat="fact in job.facts track by $index" ng-class="getFactClass(fact.key)">{{ fact.value }}</li>
             </ul>

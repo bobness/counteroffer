@@ -300,4 +300,8 @@ angular.module('counteroffer.app', [
         };
       }
     };
+    
+    $scope.displayDate = function(job) {
+      return (new Date(job.latest_msg)).toLocaleDateString();
+    };
   }]);
