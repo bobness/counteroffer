@@ -98,8 +98,8 @@ router.get('/jobs', function(req, res, next) {
 router.put('/jobs/:job_id', (req, res, next) => {
   const job = req.body;
   return req.client.query({
-    text: 'update jobs set company = $1::text where id=$2::bigint',
-    values: [job.company, req.params.job_id]
+    text: 'update jobs set company = $1::text, archived = $2::boolean where id=$3::bigint',
+    values: [job.company, job.archived, req.params.job_id]
   }).then(() => {
     req.client.end();
     res.sendStatus(200);

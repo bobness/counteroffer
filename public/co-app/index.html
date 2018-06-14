@@ -37,9 +37,7 @@
           - merge portfolio-creator (via npm install) onto this interface
           - create another table 'counteroffers' and link to 'jobs'
           - scrape from LinkedIn to import resume? or would importing a PDF/doc(x) be easier? - to get Ryan onto the platform
-        
-        - list jobs/discussions per counteroffer
-          - consider adding a tab UI to co.app to show them
+          - consider adding a tab UI to co.app to show counteroffers
     -->
     <h1 style="text-align:center;">Counteroffer</h1>
     <div ng-show="!jobs && notLoggedIn" style="margin:0 auto;width:300px;">
@@ -110,14 +108,18 @@
                       <span class="glyphicon glyphicon-upload" aria-hidden="true"></span>
                       Reply
                     </button>
-                    <button class="btn btn-sm btn-default panel" ng-click="archiveJob(newMessage, job)" style="margin:10px;">
+                    <button class="btn btn-sm btn-default panel" ng-click="archiveJob(job, true, newMessage)" style="margin:10px;">
                       <span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
-                      Decline
+                      Archive
                     </button>
                   </div>
                 </form>
               </div>
               <div style="clear:both;" ng-show="jobs.length > 1">
+                <button class="btn btn-sm btn-default panel" ng-click="archiveJob(job, false)">
+                  <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
+                  Unarchive
+                </button>
                 <button class="btn btn-sm btn-default panel" ng-click="deleteJob(job)">
                   <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
                   Delete Job

@@ -91,11 +91,17 @@ angular.module('counteroffer.app', [
       });
     };
     
-    $scope.archiveJob = function(message, job) {
-      job.archived = true;
-      return $scope.sendMessage(message, job, true).then(function() {
-        $scope.setPath('archived');
-      });
+    $scope.archiveJob = function(job, toArchive, message) {
+      job.archived = toArchive;
+      if (message) {
+        return $scope.sendMessage(message, job, true).then(function() {
+          $scope.setPath(toArchive ? 'archived' : '');
+        });
+      } else {
+        return $scope.updateJob(job).then(function() {
+          $scope.setPath(toArchive ? 'archived' : '');
+        });
+      }
     };
     
     $scope.deleteJob = function(job) {
