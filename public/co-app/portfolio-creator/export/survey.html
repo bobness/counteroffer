@@ -1,0 +1,74 @@
+<div class="panel panel-default">
+  <div class="panel-heading">Contact Bob</div>
+  <div class="panel-body">
+    
+    <p>To talk with Bob about job opportunities, please fill out the following details below. </p>
+    
+    <p><strong>Progress:</strong></p>
+    <div class="progress">
+      <div class="progress-bar" role="progressbar" ng-style="{width: progress()+'%'}">
+        <span class="sr-only">{{ progress() }}% Complete</span>
+      </div>
+    </div>
+    
+    <div ng-show="state === 'busy'">
+      Sending email... <img src="loading.gif" />
+    </div>
+    <div ng-show="state === 'error'" class="panel-danger">
+      Sorry, there was an error submitting this survey. Please notify Bob.
+    </div>
+    <div ng-show="state === 'ok'">
+      <div class="panel question" ng-class="getPanelClass(emailQuestion)">
+        <div class="panel-heading">Your email address: *</div>
+        <div class="panel-body">
+          <input type="text" ng-model="emailQuestion.value">
+        </div>
+      </div>
+      <button class="btn btn-sm btn-default panel" ng-click="addJob()">
+        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+        Add Job
+      </button>
+      <div ng-repeat="job in jobs track by $index" class="panel panel-default">
+        <div class="panel-heading">
+          <div style="float:right;clear:both;margin-top:-5px;" ng-show="jobs.length > 1">
+            <button class="btn btn-sm btn-default panel" ng-click="deleteJob($index)">
+              <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+              Delete Job
+            </button>
+          </div>
+          Job #{{$index+1}}
+        </div>
+        <div class="panel-body">
+          <div class="panel question" ng-repeat="question in job.questions" ng-class="getPanelClass(question)">
+            <div class="panel-heading">
+              {{ question.text }} {{ question.required ? '*' : '' }}
+            </div>
+            <div class="panel-body">
+              <div ng-if="question.type === 'text'">
+                <input type="text" ng-model="question.value">
+              </div>
+              <div ng-if="question.type === 'skills'">
+                <div ng-repeat="tag in job.tags track by $index">
+                  <label>
+                    <input type="checkbox" ng-model="tag.selected" ng-change="selectTag(question, tag)">
+                    {{ tag.name }}
+                  </label>
+                </div>
+              </div>
+              <div ng-if="question.type === 'textarea'">
+                <textarea style="width:500px;height:200px;" ng-model="question.value"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div>
+      <button class="btn btn-sm btn-default" ng-click="submit({data: data})" ng-disabled="progress() !== 100">
+        <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+        Submit
+      </button>
+    </div>
+  </div>
+</div>

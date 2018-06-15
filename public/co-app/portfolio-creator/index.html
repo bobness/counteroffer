@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
+    <!-- build:css -->
+    <link href="bower_components/angular-xeditable/dist/css/xeditable.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="bower_components/ng-tags-input/ng-tags-input.css">
+    <!-- endbuild -->
+    
+    <link rel="stylesheet" href="style.css" />
+    
+    <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon" />
+    
+    <title>Bob Stark's Portfolio</title>
+    
+    <!-- build:lib -->
+    <script src="bower_components/angular-resource/angular-resource.min.js"></script>
+    <script src="bower_components/angular-sanitize/angular-sanitize.min.js"></script>
+    <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+    <script src="bower_components/ng-tags-input/ng-tags-input.min.js"></script>
+    <script src="bower_components/ng-drag-to-reorder/ngDragToReorder.js"></script>
+    <!-- endbuild -->
+    
+    <!-- build:js -->
+    <script src="js/app.js"></script>
+    <script src="js/portfolioController.js"></script>
+    <script src="js/portfolioService.js"></script>
+    <script src="js/experience.js"></script>
+    <script src="js/histogram.js"></script>
+    <script src="js/survey.js"></script>
+    <!-- endbuild -->
+    
+  </head>
+  <body ng-app="pc" ng-controller="portfolioController">
+    
+    <a href="https://github.com/bobness/portfolio-creator" target="_blank"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+    
+    <div style="text-align:center;">
+      <h1>Bob Stark</h1> <!-- TODO: remove for anonymous counter-offers -->
+      <div style="margin:1em;">
+        <ul ng-show="portfolio.themes" class="nav nav-pills" style="display:inline-block;">
+          <li class="pill-title">Themes:</li>
+          <li ng-class="{active: !themeIsSelected()}">
+            <a ng-click="showTheme('')">All</a>
+          </li>
+          <li ng-repeat="theme in portfolio.themes" ng-class="{active: themeIsSelected(theme.name)}">
+            <a ng-click="showTheme(theme.name)" style="cursor:pointer;">{{ theme.name }}</a>
+          </li>
+        </ul>
+      </div>
+      <div>
+        <h2>Facts about me for {{ getSelectedTheme().name || 'new themes' }}</h2>
+        <table id="facts" class="table table-striped table-bordered" style="text-align:left;">
+          <tbody drag-to-reorder="getThemeFacts()">
+            <tr ng-repeat="fact in getThemeFacts() track by $index" dtr-draggable>
+              <th scope="row"><a editable-text="fact.name" onaftersave="updateFact(fact)">{{ fact.name }}</a></th>
+              <td><a editable-textarea="fact.value" onaftersave="updateFact(fact)">{{ fact.value }}</a></td>
+              <td><button class="btn btn-sm btn-default" ng-click="deleteFact(fact)">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                Delete
+              </button></td>
+            </tr>
+            <tr style="text-align:center;"><td colspan="3">
+              <button class="btn btn-sm btn-default" ng-click="addFact()">
+                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                Add Fact
+              </button>
+              </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- build:hide -->
+    <div style="text-align:center;margin:1em;">
+      <button class="btn btn-sm btn-default" style="display:inline-block;" 
+      	ng-click="openLinkedInModal()">
+      	<span class="glyphicon glyphicon-import" aria-hidden="true"></span>
+      	Import LinkedIn
+      </button>
+      <button class="btn btn-sm btn-default" style="display:inline-block;" 
+        ng-if="selectedTags.length > 0"
+        ng-click="createTheme(selectedTags)">
+        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+        Create Theme
+      </button>
+      <button class="btn btn-sm btn-default" style="display:inline-block;" 
+      	ng-if="themeIsSelected()"
+      	ng-click="deleteSelectedTheme()">
+      	<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+      	Delete Theme
+      </button>
+      <button class="btn btn-sm btn-default" style="display:inline-block;"
+        ng-if="themeIsSelected()"
+      	ng-click="createCampaign()">
+      	<span class="glyphicon glyphicon-export" aria-hidden="true"></span>
+      	Export Theme
+      </button>
+    </div>
+    <!-- endbuild -->
+    
+    <div style="max-height:300px;overflow-y:scroll;border:1px black solid;border-radius:5px;">
+      <histogram
+        tag-counts="tagCounts" 
+        set-filter="setFilter(func)" 
+        get-experiences="getExperiences()" 
+        selected-tags="selectedTags"
+        themes="portfolio.themes"
+        ></histogram>
+    </div>
+    
+    <div style="text-align:center;margin:1em">
+      <ul class="nav nav-pills" style="display:inline-block;">
+        <li ng-class="{active: !surveyVisible()}">
+          <a ng-click="hideSurvey()" style="cursor:pointer;">Experiences</a>
+        </li>
+        <li ng-class="{active: surveyVisible()}">
+          <a ng-click="showSurvey()" style="cursor:pointer;">Contact</a>
+        </li>
+      </ul>
+    </div>
+    
+    <div style="display:inline-block;box-sizing:border-box;" ng-hide="surveyVisible()">
+      <div style="margin-top:10px;">
+  	    <button class="btn btn-sm btn-default" ng-click="createExperience()">
+  	      <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+          Add Experience
+  	    </button>
+      </div>
+      <experience ng-repeat="exp in portfolio.experiences | filter:expFilter | orderBy : parseDate : true" 
+      	data="exp"
+      	refresh-callback="refreshExperiences({exp: exp})">
+      </experience>
+    </div>
+    
+    <survey ng-if="surveyVisible()"
+      theme="getSelectedTheme()"
+      questions="getQuestions()"
+      tag-counts="tagCounts">
+    </survey>
+    
+    <script type="text/ng-template" id="tag-template">
+      <div class="tag-template tag label label-info">
+        <span>{{$getDisplayText()}}</span>
+        <a class="remove-button" ng-click="$removeTag()">x</a>
+      </div>
+    </script>
+    
+    <div style="position:fixed;right:50px;bottom:0;">
+      <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + (alert.type || 'warning')" close="closeAlert($index)">{{ alert.msg }}</div>
+    </div>
+
+  </body>
+</html>

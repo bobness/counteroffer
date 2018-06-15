@@ -1,0 +1,52 @@
+<div class="panel panel-default">
+  <div class="panel-heading">Contact Bob</div>
+  <div class="panel-body">
+    <h5>Questions to ask for each job...</h5>
+    <div class="panel question" ng-repeat="question in questions" ng-class="getPanelClass(question)">
+      <div class="panel-heading">
+        <a href="#"
+          editable-text="question.text" onaftersave="updateQuestion(question)">
+          {{ question.text }}
+        </a> {{ question.required ? '*' : '' }}
+        <span style="float:right;margin-top:-5px;">
+          <button class="btn btn-sm btn-default" ng-click="deleteQuestion(question)">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+            Delete
+          </button>
+        </span>
+      </div>
+      <div class="panel-body">
+        <div>
+          Type: 
+          <select ng-model="question.type" ng-options="capitalizeFirstLetter(option) for option in questionTypes" ng-change="updateQuestion(question)"></select>
+        </div>
+        <div>
+          Required: 
+          <input type="checkbox" ng-model="question.required" ng-change="updateQuestion(question)">
+        </div>
+        <h5 style="border-bottom: 1px #ccc solid;">Preview</h5>
+        <div ng-if="question.type === 'text'">
+          <input type="text" ng-model="question.value">
+        </div>
+        <div ng-if="question.type === 'skills'">
+          <div ng-repeat="tag in tags track by $index">
+            <label>
+              <input type="checkbox" ng-model="tag.selected" ng-change="selectTag(question, tag)">
+              {{ tag.name }}
+            </label>
+          </div>
+        </div>
+        <div ng-if="question.type === 'textarea'">
+          <textarea style="width:500px;height:200px;" ng-model="question.value"></textarea>
+        </div>
+      </div>
+    </div>
+    
+    <div>
+      <button class="btn btn-sm btn-default" ng-click="addQuestion()">
+        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+        Add Question
+      </button>
+    </div>
+  </div>
+</div>
