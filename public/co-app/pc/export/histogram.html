@@ -1,0 +1,18 @@
+<div style="display:inline-block;width:100%;">
+  <div style="text-align:center;padding:5px;">
+    <strong style="float:left">Click one or more bars to filter the experiences below</strong>
+    <div style="float:right;">
+      <input type="text" ng-model="filter" placeholder="Search" />
+      <span class="glyphicon glyphicon-remove-circle" aria-hidden="true" style="cursor:pointer;" ng-click="filter = ''"></span>
+    </div>
+  </div>
+  <div style="clear:both;">
+    <span ng-repeat="tag in tagCounts | filter:filter" style="display:inline-block;width:70px;vertical-align:bottom;margin:15px;font-size: smaller;">
+      <div style="text-overflow:ellipsis;overflow:hidden;">{{ tag.name }}</div>
+      <div class="tagBar"
+        style="height: {{ tag.count * 15 }}px;color:white;text-align:center;vertical-align:bottom;cursor:pointer;"
+	      ng-class="{ danger : isSelected(tag) }"
+        ng-click="selectTag(tag)">{{ tag.count }}</div>
+    </span>
+  </div>
+</div>

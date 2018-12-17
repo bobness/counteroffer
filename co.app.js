@@ -4,7 +4,8 @@ const express = require('express'),
       bodyParser = require('body-parser'),
       app = express(),
       http = require('http'),
-      { Client } = require('pg');
+      { Client } = require('pg'),
+      Portfolio = require('./routes/portfolio');
 
 app.use('/', (req, res, next) => next(), express.static('public/co-app'));
 
@@ -27,6 +28,13 @@ app.use(async (req, res, next) => {
 
 const index = require('./routes/co-app');
 app.use('/', index);
+
+// const filePath = process.argv[2]; // node app.js [path]
+const filePath = './portfolio.json';
+const portfolio = new Portfolio(filePath);
+app.set('portfolio', portfolio);
+const pc = require('./routes/pc-routes');
+app.use('/portfolio', pc);
 
 const server = http.createServer(app);
 server.listen(process.env.PORT || 3002);
