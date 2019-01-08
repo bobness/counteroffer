@@ -1,0 +1,80 @@
+<div>
+  <!-- build:hide -->
+  <div style="text-align:center;margin:1em;">
+    <button class="btn btn-sm btn-default" style="display:inline-block;"
+      ng-click="openLinkedInModal()">
+      <span class="glyphicon glyphicon-import" aria-hidden="true"></span>
+      Import LinkedIn
+    </button>
+    <button class="btn btn-sm btn-default" style="display:inline-block;"
+      ng-if="selectedTags.length > 0"
+      ng-click="createTheme(selectedTags)">
+      <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+      Create Counteroffer
+    </button>
+    <button class="btn btn-sm btn-default" style="display:inline-block;"
+      ng-if="themeIsSelected()"
+      ng-click="deleteSelectedTheme()">
+      <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+      Delete Counteroffer
+    </button>
+    <button class="btn btn-sm btn-default" style="display:inline-block;"
+      ng-if="themeIsSelected()"
+      ng-click="createCampaign()">
+      <span class="glyphicon glyphicon-export" aria-hidden="true"></span>
+      Publish Counteroffer
+    </button>
+  </div>
+  <!-- endbuild -->
+
+  <div style="max-height:300px;overflow-y:scroll;border:1px black solid;border-radius:5px;">
+    <histogram
+      tag-counts="tagCounts"
+      set-filter="setFilter(func)"
+      get-experiences="getExperiences()"
+      selected-tags="selectedTags"
+      themes="portfolioObj.themes"
+      ></histogram>
+  </div>
+
+  <div style="text-align:center;margin:1em">
+    <ul class="nav nav-pills" style="display:inline-block;">
+      <li ng-class="{active: !surveyVisible()}">
+        <a ng-click="hideSurvey()" style="cursor:pointer;">Experiences</a>
+      </li>
+      <li ng-class="{active: surveyVisible()}">
+        <a ng-click="showSurvey()" style="cursor:pointer;">Contact</a>
+      </li>
+    </ul>
+  </div>
+
+  <div style="display:inline-block;box-sizing:border-box;" ng-hide="surveyVisible()">
+    <div style="margin-top:10px;">
+      <button class="btn btn-sm btn-default" ng-click="createExperience()">
+        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+        Add Experience
+      </button>
+    </div>
+    <experience ng-repeat="exp in portfolioObj.experiences | filter:expFilter | orderBy : parseDate : true"
+      data="exp"
+      refresh-callback="refreshExperiences({exp: exp})">
+    </experience>
+  </div>
+
+  <survey ng-if="surveyVisible() && portfolioObj"
+    theme="getSelectedTheme()"
+    questions="getQuestions()"
+    tag-counts="tagCounts">
+  </survey>
+
+  <script type="text/ng-template" id="tag-template">
+    <div class="tag-template tag label label-info">
+      <span>{{$getDisplayText()}}</span>
+      <a class="remove-button" ng-click="$removeTag()">x</a>
+    </div>
+  </script>
+
+  <div style="position:fixed;right:50px;bottom:0;">
+    <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + (alert.type || 'warning')" close="closeAlert($index)">{{ alert.msg }}</div>
+  </div>
+</div>

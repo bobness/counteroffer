@@ -1,0 +1,21 @@
+<div>
+  <h2>Facts about me for {{ theme.name || 'new themes' }}</h2>z
+  <table id="facts" class="table table-striped table-bordered" style="text-align:left;">
+    <tbody drag-to-reorder="getThemeFacts()">
+      <tr ng-repeat="fact in getThemeFacts() track by $index" dtr-draggable>
+        <th scope="row"><a editable-text="fact.name" onaftersave="updateFact(fact)">{{ fact.name }}</a></th>
+        <td><a editable-textarea="fact.value" onaftersave="updateFact(fact)">{{ fact.value }}</a></td>
+        <td><button class="btn btn-sm btn-default" ng-click="deleteFact(fact)">
+          <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+          Delete
+        </button></td>
+      </tr>
+      <tr style="text-align:center;"><td colspan="3">
+        <button class="btn btn-sm btn-default" ng-click="addFact()">
+          <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+          Add Fact
+        </button>
+        </td></tr>
+    </tbody>
+  </table>
+</div>

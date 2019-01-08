@@ -1,12 +1,4 @@
 <!DOCTYPE html>
-<!--
-  use cases:
-    - publish multiple counteroffers to counteroffer.me
-      x - merge portfolio-creator onto this interface
-      - create another table 'counteroffers' and link to 'jobs'
-      - scrape from LinkedIn to import resume? or would importing a PDF/doc(x) be easier? - to get Ryan onto the platform
-      - consider adding a tab UI to co.app to show counteroffers
--->
 <html lang="en" style="height:100%;">
   <head>
     <meta charset="utf-8">
@@ -16,26 +8,49 @@
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
 
+    <!-- build:css -->
+    <link href="bower_components/angular-xeditable/dist/css/xeditable.css" rel="stylesheet">
+    <link rel="stylesheet" href="pc/bower_components/ng-tags-input/ng-tags-input.css">
+    <!-- endbuild -->
+
     <link rel="stylesheet" href="../style.css" />
     <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon" />
 
     <title>Counteroffer</title>
 
-    <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="bower_components/angular/angular.min.js"></script>
     <script src="bower_components/angular-cookies/angular-cookies.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-    <script src="bower_components/angular-xeditable/dist/js/xeditable.min.js"></script>
+    <!-- <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script> -->
+    <script src="pc/bower_components/angular-resource/angular-resource.min.js"></script>
+    <script src="pc/bower_components/angular-sanitize/angular-sanitize.min.js"></script>
+    <script src="pc/bower_components/angular-xeditable/dist/js/xeditable.min.js"></script>
+    <script src="pc/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+    <script src="pc/bower_components/ng-tags-input/ng-tags-input.min.js"></script>
+    <script src="pc/bower_components/ng-drag-to-reorder/ngDragToReorder.js"></script>
+
     <script src="app.js"></script>
+    <script src="pc/js/portfolioService.js"></script>
+    <script src="pc/js/experience.js"></script>
+    <script src="pc/js/histogram.js"></script>
+    <script src="pc/js/survey.js"></script>
+    <script src="pc/js/portfolio.js"></script>
+    <script src="mainController.js"></script>
   </head>
   <body ng-app="counteroffer.app" ng-controller="mainController" style="height:100%;">
-    <div style="float:left;width:200px;">
-      <ul class="list-group">
-        <li class="list-group-item"><a ng-click="show('dashboard/')" style="cursor:pointer;">Jobs Dashboard</a></li>
-        <li class="list-group-item"><a ng-click="show('pc/')" style="cursor:pointer;">Portfolio Creator</a></li>
-        <li class="list-group-item"><a ng-click="show('pc/export/')" style="cursor:pointer;">Portfolio Preview</a></li>
+    <h3 style="text-align:center;">Bob Stark</h3>
+    <div style="text-align:center;margin:20px auto;border-bottom:1px black solid;">
+      <ul class="nav nav-pills" style="display:inline-block;">
+        <li ng-class="{active: !themeIsSelected()}">
+          <a ng-click="showTheme('')" style="cursor:pointer;">Portfolio</a>
+        </li>
+        <li ng-repeat="theme in portfolio.themes" ng-class="{active: themeIsSelected(theme.name)}">
+          <a ng-click="showTheme(theme.name)" style="cursor:pointer;">{{ theme.name }}</a>
+        </li>
       </ul>
     </div>
-    <iframe src="{{ currentPageSrc }}" style="border:0;width:calc(100% - 200px);height:100%;"></iframe>
+    <div>
+      <portfolio theme="currentTheme" portfolio-obj="portfolio"></portfolio>
+    </div>
   </body>
 </html>

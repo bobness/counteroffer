@@ -17,7 +17,7 @@
   ],
   "dependencies": {
     "angular-xeditable": "^0.8.1",
-    "angular": "1.6",
+    "angular": "1.7",
     "angular-cookies": "^1.7.0"
   }
 }

@@ -5,41 +5,41 @@ function Question() {
   this.value = null;
 }
 
-angular.module('pc').directive('survey', ['portfolioService', function(portfolioService) {
+angular.module('counteroffer.app').directive('survey', ['portfolioService', function(portfolioService) {
   return {
-    templateUrl: 'html/survey.html',
+    templateUrl: PC_PREFIX + '/html/survey.html',
     scope: {
       theme: '<',
       questions: '<',
       tagCounts: '<'
     },
     link: function(scope, elem, attrs) {
-      
+
       scope.questionTypes = ['text', 'textarea', 'skills'];
-      
+
       scope.capitalizeFirstLetter = function(text) {
         var firstLetter = text[0];
         return firstLetter.toUpperCase() + text.substr(1);
       };
-      
+
       scope.questions = scope.questions || [];
-      
+
       scope.addQuestion = function() {
         return portfolioService.createQuestion(new Question(), scope.theme).then(function(question) {
           scope.questions.push(question);
         });
       };
-      
+
       scope.updateQuestion = function(question) {
         return portfolioService.updateQuestion(question, scope.theme);
       };
-      
+
       scope.deleteQuestion = function(question) {
         return portfolioService.deleteQuestion(question, scope.theme).then(function() {
           scope.questions = scope.questions.filter(function(q) { return q !== question; });
         });
       };
-      
+
       scope.$watch('tagCounts', function() {
         if (scope.tagCounts) {
           scope.tags = scope.tagCounts.map(function(tag) {
@@ -50,7 +50,7 @@ angular.module('pc').directive('survey', ['portfolioService', function(portfolio
           });
         }
       });
-      
+
       scope.selectTag = function(question, tag) {
         if (tag.selected) {
           if (!Array.isArray(question.value)) {
@@ -63,7 +63,7 @@ angular.module('pc').directive('survey', ['portfolioService', function(portfolio
           }, []);
         }
       };
-      
+
       scope.getPanelClass = function(question) {
         if (question.required) {
           if (Array.isArray(question.value)) {
