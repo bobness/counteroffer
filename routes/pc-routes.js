@@ -10,16 +10,10 @@ router.use((req, res, next) => {
 });
 
 router.get('/', (req, res, next) => {
-  return res.json(portfolio.obj);
-});
-
-/*
-router.put('/', (req, res, next) => {
-  return portfolio.updatePortfolio(req.body).then(() => {
-    return res.json(portfolio.obj);
+  portfolio.fetchData().then((obj) => {
+    return res.json(obj);
   });
 });
-*/
 
 router.post('/facts', (req, res, next) => {
   const fact = portfolio.addFact(req.body);

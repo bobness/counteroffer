@@ -1,24 +1,39 @@
-angular.module('counteroffer.app').factory('portfolioService', function($http) {
+angular.module('counteroffer.app').factory('portfolioService', ['$http', '$cookies',
+function($http, $cookies) {
   var service = {};
 
   var portfolio;
 
   var put = function(url, data) {
-    return $http.put(url, data).then(function(res) {
+    return $http.put(
+      url,
+      data,
+      { headers: { 'x-username': username, 'x-session-id': session } }
+    ).then(function(res) {
       return res.data;
     });
   };
 
   var post = function(url, data) {
-    return $http.post(url, data).then(function(res) {
+    return $http.post(
+      url,
+      data,
+      { headers: { 'x-username': username, 'x-session-id': session } }
+    ).then(function(res) {
       return res.data;
     });
   };
 
-  var rootUrl = '/portfolio';
+  const rootUrl = '/api/portfolio';
+
+  const session = $cookies.get('session');
+  const username = $cookies.get('username');
 
   service.getPortfolio = function() {
-    return $http.get(rootUrl).then(function(res) {
+    return $http.get(
+      rootUrl,
+      { headers: { 'x-username': username, 'x-session-id': session } }
+    ).then(function(res) {
 	    portfolio = res.data;
       return portfolio;
     });
@@ -164,4 +179,4 @@ angular.module('counteroffer.app').factory('portfolioService', function($http) {
   };
 
   return service;
-});
+}]);

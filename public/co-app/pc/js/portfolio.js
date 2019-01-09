@@ -52,6 +52,7 @@ angular.module('counteroffer.app').directive('portfolio', ['$uibModal', '$locati
 
         scope.showTheme = function(name) {
           $location.path(name);
+          updateTagCounts();
         };
 
         scope.createTheme = function(selectedTags) {
@@ -96,6 +97,14 @@ angular.module('counteroffer.app').directive('portfolio', ['$uibModal', '$locati
             updateTagCounts();
           }
         });
+
+        scope.$watch('theme', function(newTheme, oldTheme) {
+          var oldThemeName = oldTheme ? oldTheme.name : '';
+          var newThemeName = newTheme ? newTheme.name : '';
+          if (oldThemeName !== newThemeName) {
+            updateTagCounts();
+          }
+        })
 
         scope.getExperiences = function() {
           return scope.portfolioObj.experiences;

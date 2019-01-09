@@ -14,6 +14,12 @@
     </button>
     <button class="btn btn-sm btn-default" style="display:inline-block;"
       ng-if="themeIsSelected()"
+      ng-click="publishSelectedTheme()">
+      <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+      Publish Counteroffer
+    </button>
+    <button class="btn btn-sm btn-default" style="display:inline-block;"
+      ng-if="themeIsSelected()"
       ng-click="deleteSelectedTheme()">
       <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
       Delete Counteroffer

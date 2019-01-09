@@ -1,9 +1,10 @@
 angular.module('counteroffer.app')
-.controller('mainController', ['$scope', '$location', 'portfolioService',
-  function($scope, $location, portfolioService) {
+.controller('mainController', ['$scope', '$location', '$cookies', '$http', 'portfolioService',
+  function($scope, $location, $cookies, $http, portfolioService) {
 
     portfolioService.getPortfolio().then((portfolio) => {
       $scope.portfolio = portfolio;
+      $scope.currentTheme = getSelectedTheme();
     });
 
     $scope.themeIsSelected = function(name) {
@@ -28,8 +29,6 @@ angular.module('counteroffer.app')
       }
     };
 
-    $scope.currentTheme = getSelectedTheme();
-
     $scope.showTheme = function(name) {
       $location.path(name);
       $scope.currentTheme = getSelectedTheme();
@@ -40,6 +39,47 @@ angular.module('counteroffer.app')
       return portfolioService.deleteTheme(name).then(function() {
         $scope.portfolio.themes = $scope.portfolio.themes.filter(function(theme) { return theme.name !== name; });
         $scope.showTheme('');
+      });
+    };
+
+    var username = $cookies.get('username'),
+        session = $cookies.get('session');
+    if (username && session) {
+      $scope.selectedJob = null;
+      $scope.newMessage = {
+        value: '',
+        username: username
+      };
+      $scope.busy = true;
+      // $http.get('/jobs').then(function(response) {
+      //   $scope.jobs = response.data;
+      //   $scope.factClasses = refreshFactClasses($scope.jobs);
+      //   var params = $location.search();
+      //   var jobID = Number(params.job);
+      //   sortByKey = params.sort;
+      //   if (jobID) {
+      //     $scope.selectedJob = $scope.jobs.filter(function(job) { return job.id == jobID; })[0];
+      //     $timeout(function() {
+      //       $(`#collapse${jobID}`).collapse('show');
+      //       $anchorScroll(`heading${jobID}`);
+      //     });
+      //   }
+      // }).finally(() => {
+      //   $scope.busy = false;
+      // });
+    } else {
+      $scope.notLoggedIn = true;
+    }
+
+    $scope.login = function(username, password) {
+      return $http.post('/api/session', {
+        username: username,
+        password: password
+      }).then((response) => {
+        var session = response.data;
+        $cookies.put('session', session);
+        $cookies.put('username', username);
+        location.reload();
       });
     };
 }]);

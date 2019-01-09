@@ -35,47 +35,6 @@ angular.module('counteroffer.app', [
     }, {});
   };
 
-  var username = $cookies.get('username'),
-      session = $cookies.get('session');
-  if (username && session) {
-    $scope.selectedJob = null;
-    $scope.newMessage = {
-      value: '',
-      username: username
-    };
-    $scope.busy = true;
-    $http.get('/jobs').then(function(response) {
-      $scope.jobs = response.data;
-      $scope.factClasses = refreshFactClasses($scope.jobs);
-      var params = $location.search();
-      var jobID = Number(params.job);
-      sortByKey = params.sort;
-      if (jobID) {
-        $scope.selectedJob = $scope.jobs.filter(function(job) { return job.id == jobID; })[0];
-        $timeout(function() {
-          $(`#collapse${jobID}`).collapse('show');
-          $anchorScroll(`heading${jobID}`);
-        });
-      }
-    }).finally(() => {
-      $scope.busy = false;
-    });
-  } else {
-    $scope.notLoggedIn = true;
-  }
-
-  $scope.login = function(username, password) {
-    return $http.post('/session', {
-      username: username,
-      password: password
-    }).then((response) => {
-      var session = response.data;
-      $cookies.put('session', session);
-      $cookies.put('username', username);
-      location.reload();
-    });
-  };
-
   $scope.sendMessage = function(message, job, archive) {
     var body = {
       message: message,
