@@ -1,6 +1,7 @@
 'use strict';
 
 const fs = require('fs');
+const btoa = require('btoa');
 
 class Portfolio {
   constructor(client, userId) {
@@ -117,20 +118,33 @@ class Portfolio {
     this.obj.questions.splice(index, 1);
   }
 
-  writeCampaignFile(path, themeName) {
+  writeCampaign(themeName) {
     const theme = this.obj.themes.find((theme) => theme.name === themeName),
           experiences = theme.tags.reduce((experiences, tag) => {
             return experiences.concat(this.obj.experiences.filter((exp) => {
               return exp.tags.indexOf(tag) > -1 && experiences.indexOf(exp) === -1;
             }));
           }, []),
-          data = {
-            experiences: experiences,
+          content = {
+            experiences: experiences, // TODO: only show the relevant experiences in the editor, too
             tags: theme.tags,
             facts: theme.facts,
             questions: theme.questions
           };
-    return writeFile(path, data);
+    return this.client.query({
+      text: 'insert into campaigns content = $1::json, portfolio_id = $2::bigint, theme_name = $3::text returning *',
+      values: [content, this.id, theme.name]
+    }).then((result) => {
+      const campaign = result.rows[0];
+      campaign.url = btoa(campaign.id);
+      return this.client.query({
+        text: 'update campaigns set url = $1::text where id = $2::bigint',
+        values: [campaign.url, campaign.id]
+      }).then(() => {
+        this.client.end();
+        return res.json(campaign);
+      });
+    });
   }
 }
 

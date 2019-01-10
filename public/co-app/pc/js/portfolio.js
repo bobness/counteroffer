@@ -253,12 +253,22 @@ angular.module('counteroffer.app').directive('portfolio', ['$uibModal', '$locati
           });
         };
 
+        // TODO: enable updating an existing campaign
         scope.createCampaign = function() {
-          var path = 'public/export';
-          var themeName = scope.theme ? scope.theme.name : '';
-          return portfolioService.createCampaign(themeName, path).then(function() {
-            scope.success('Created campaign JSON file: ' + path + '/' + themeName + '.json');
-          });
+          if (scope.theme) {
+            var themeName = scope.theme.name;
+            return portfolioService.createCampaign(themeName, path).then(function(campaignObj) {
+              scope.campaign = campaignObj;
+            });
+          }
+        };
+
+        var mode = 'edit';
+        scope.isInMode = function(m) {
+          return mode === m;
+        };
+        scope.setMode = function(m) {
+          mode = m;
         };
       }
     }

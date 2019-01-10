@@ -167,15 +167,11 @@ router.post('/campaign', (req, res, next) => {
 	const options = req.body;
 	try {
   	if (options) {
-  		let path = 'campaign.json';
-  		if (options.path) {
-  			path = options.path;
-  		}
   		let theme = '';
   		if (options.theme) {
   			theme = options.theme;
   		}
-  		return portfolio.writeCampaignFile(path, theme).then(() => {
+  		return portfolio.writeCampaign(theme).then(() => {
     		return res.sendStatus(200);
   		});
   	} else {

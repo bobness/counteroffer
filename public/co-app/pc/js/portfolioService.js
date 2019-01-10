@@ -3,6 +3,7 @@ function($http, $cookies) {
   var service = {};
 
   var portfolio;
+  var campaign;
 
   var put = function(url, data) {
     return $http.put(
@@ -43,6 +44,16 @@ function($http, $cookies) {
     ).then(function(res) {
 	    portfolio = res.data;
       return portfolio;
+    });
+  };
+
+  service.getCampaign = function() {
+    return $http.get(
+      rootUrl + '/campaign',
+      { headers: { 'x-username': username, 'x-session-id': session } }
+    ).then(function(res) {
+      campaign = res.data;
+      return campaign;
     });
   };
 
@@ -182,7 +193,10 @@ function($http, $cookies) {
       theme: themeName,
       path: path + '/' + themeName + '.json'
     };
-    return post(rootUrl + '/campaign', body);
+    return post(rootUrl + '/campaign', body).then(function(campaignObj) {
+      campaign = campaignObj;
+      return campaign;
+    });
   };
 
   return service;
