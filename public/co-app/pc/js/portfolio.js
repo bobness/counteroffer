@@ -52,7 +52,7 @@ angular.module('counteroffer.app').directive('portfolio', ['$uibModal', '$locati
 
         scope.showTheme = function(name) {
           $location.path(name);
-          updateTagCounts();
+          scope.theme = scope.portfolioObj.themes.filter((theme) => theme.name === name)[0];
         };
 
         scope.createTheme = function(selectedTags) {
@@ -243,6 +243,14 @@ angular.module('counteroffer.app').directive('portfolio', ['$uibModal', '$locati
                 };
               }]
             });
+        };
+
+        scope.deleteSelectedTheme = function() {
+          var name = scope.theme.name;
+          return portfolioService.deleteTheme(name).then(function() {
+            scope.portfolioObj.themes = scope.portfolioObj.themes.filter(function(theme) { return theme.name !== name; });
+            scope.showTheme('');
+          });
         };
 
         scope.createCampaign = function() {

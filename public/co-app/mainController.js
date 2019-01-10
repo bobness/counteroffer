@@ -34,14 +34,6 @@ angular.module('counteroffer.app')
       $scope.currentTheme = getSelectedTheme();
     };
 
-    $scope.deleteSelectedTheme = function() {
-      var name = selectedThemeName();
-      return portfolioService.deleteTheme(name).then(function() {
-        $scope.portfolio.themes = $scope.portfolio.themes.filter(function(theme) { return theme.name !== name; });
-        $scope.showTheme('');
-      });
-    };
-
     var username = $cookies.get('username'),
         session = $cookies.get('session');
     if (username && session) {
