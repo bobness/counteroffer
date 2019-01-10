@@ -257,7 +257,7 @@ angular.module('counteroffer.app').directive('portfolio', ['$uibModal', '$locati
         scope.createCampaign = function() {
           if (scope.theme) {
             var themeName = scope.theme.name;
-            return portfolioService.createCampaign(themeName, path).then(function(campaignObj) {
+            return portfolioService.createCampaign(themeName).then(function(campaignObj) {
               scope.campaign = campaignObj;
             });
           }

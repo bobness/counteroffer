@@ -1,13 +1,15 @@
 angular.module('counteroffer.me', ['ngCookies'])
   .controller('controller', ['$scope', '$http', '$location', '$cookies', function($scope, $http, $location, $cookies) {
-    $http.get(('Counteroffer.json')).then(function(res) {
-      var json = res.data;
+    var hash = $location.path().substring(1);
+    $http.get('/campaign/' + hash).then(function(res) {
+      var campaign = res.data.rows[0];
+      var json = campaign.content;
       $scope.experiences = json.experiences;
       $scope.tagCounts = countTags(json.experiences, json.tags);
       $scope.facts = json.facts;
       $scope.messages = json.questions;
     });
-    
+
     var countTags = function(experiences, tags) {
       tags = tags.map(function(name) { return {name: name, count: 0 }; });
       experiences.forEach(function(exp) {
@@ -20,7 +22,7 @@ angular.module('counteroffer.me', ['ngCookies'])
       });
       return tags.sort(function(a,b) { return b.count - a.count; });
     };
-    
+
     $scope.parseDate = function(exp) {
       var date = exp['start'],
           parts = date.split('/');
@@ -35,7 +37,7 @@ angular.module('counteroffer.me', ['ngCookies'])
 	      return new Date(date);
       }
     };
-    
+
     var filterFunc;
     $scope.setFilter = function(func) {
       filterFunc = func;
@@ -47,24 +49,24 @@ angular.module('counteroffer.me', ['ngCookies'])
         return true;
       }
     };
-    
+
     $scope.getExperiences = function() {
       return $scope.experiences;
     };
     $scope.selectedTags = [];
-    
+
     $scope.goToPage = function(page) {
       if (page === $scope.getCurrentPage()) {
         return location.reload();
       }
       $location.search(''); // clear ?job=x param
-      return $location.path(page);
+      return $location.hash(page);
     };
-    
+
     $scope.getCurrentPage = function() {
-      return $location.path().substring(1);
+      return $location.hash();
     };
-    
+
 /*
     $scope.sendEmail = function(obj) {
       var emailQuestion = obj.emailQuestion,
@@ -74,7 +76,7 @@ angular.module('counteroffer.me', ['ngCookies'])
       });
     };
 */
-    
+
     $scope.submitSurvey = function(obj) {
       var email = obj.email,
           username = obj.username,
@@ -108,7 +110,7 @@ angular.module('counteroffer.me', ['ngCookies'])
         });
       }
     };
-    
+
   }])
   .directive('experience', ['$sce', function($sce) {
     return {
@@ -137,7 +139,7 @@ angular.module('counteroffer.me', ['ngCookies'])
         selectedTags: '='
       },
       link: function(scope) {
-        
+
         scope.selectTag = function(tag) {
           var index = scope.selectedTags
             .map(function(tag) { return tag.name; })
@@ -148,30 +150,30 @@ angular.module('counteroffer.me', ['ngCookies'])
             scope.selectedTags.splice(index, 1);
           }
         };
-        
+
         var filterExperiencesByTags = function(exp, tags) {
           return tags.reduce(function(matched, tag) {
             var name = tag.name || tag;
             return matched && (exp.tags.indexOf(name) > -1);
           }, true);
         };
-        
+
         var filterExperiencesBySelectedTags = function(exp) {
           return filterExperiencesByTags(exp, scope.selectedTags);
         };
-        
+
         scope.isSelected = function(tag) {
           return scope.selectedTags.map(function(tag) { return tag.name; }).indexOf(tag.name) > -1;
         };
-        
+
         var selectedExperiences = [];
         var oldTagName = '';
-        
+
         scope.selectExperiencesFromTag = function(tagName) {
           selectedExperiences = scope.getExperiences().filter(function(exp) { return exp.tags.indexOf(tagName) > -1; });
           oldTagName = tagName;
         };
-        
+
         scope.$watchCollection('selectedTags', function() {
           if (scope.setFilter) {
             if (scope.selectedTags.length > 0) {
@@ -181,7 +183,7 @@ angular.module('counteroffer.me', ['ngCookies'])
             }
           }
         });
-        
+
         scope.$watch('filter', function() {
           if (scope.setFilter && (!scope.filter || scope.filter.length === 0)) {
             scope.setFilter({func: null});
@@ -190,7 +192,7 @@ angular.module('counteroffer.me', ['ngCookies'])
       }
     };
   }])
-  .directive('survey', ['$cookies', '$http', '$sce', '$location', '$anchorScroll', 
+  .directive('survey', ['$cookies', '$http', '$sce', '$location', '$anchorScroll',
   function($cookies, $http, $sce, $location, $anchorScroll) {
     return {
       templateUrl: 'survey.html',
@@ -202,7 +204,7 @@ angular.module('counteroffer.me', ['ngCookies'])
       link: function(scope, elem, attrs) {
         scope.state = 'ok';
         scope.jobs = [];
-        
+
         if ($cookies.get('email')) {
           scope.state = 'busy';
           scope.savedEmail = $cookies.get('email');
@@ -224,21 +226,21 @@ angular.module('counteroffer.me', ['ngCookies'])
             }
           });
         }
-        
+
         $anchorScroll('survey');
-        
+
         scope.jobIsSelected = function(job) {
           if (!scope.currentJob) {
             scope.currentJob = scope.jobs[0];
           }
           return scope.currentJob === job;
         };
-        
+
         scope.emailQuestion = {
           required: true,
           value: scope.savedEmail || null
         };
-        
+
         var copyQuestion = function(question) {
           var obj = {};
           Object.keys(question).forEach(function(key) {
@@ -246,20 +248,20 @@ angular.module('counteroffer.me', ['ngCookies'])
           });
           return obj;
         };
-        
+
         scope.addJob = function() {
           scope.jobs.push({messages: scope.messages.map(function(msg) {
             return copyQuestion(msg);
           })});
           scope.currentJob = scope.jobs[scope.jobs.length - 1];
         };
-        
+
         scope.$watch('messages', function() {
           if (scope.messages) {
             scope.addJob(); // 1 minimum
           }
         });
-        
+
         scope.deleteJob = function() {
           var index = scope.jobs.indexOf(scope.currentJob);
           $http.delete('/jobs/' + scope.currentJob.id).then(function() {
@@ -267,7 +269,7 @@ angular.module('counteroffer.me', ['ngCookies'])
             scope.currentJob = scope.jobs[0];
           });
         };
-        
+
         scope.progress = function() {
           var messages = [].concat(scope.emailQuestion);
           messages = scope.jobs.reduce(function(messages, job) {
@@ -275,16 +277,16 @@ angular.module('counteroffer.me', ['ngCookies'])
           }, messages);
           var requiredQuestions = messages.filter(function(msg) { return msg.required; });
           var denominator = requiredQuestions.length;
-          var numerator = requiredQuestions.filter(function(msg) { 
+          var numerator = requiredQuestions.filter(function(msg) {
             if (Array.isArray(msg.value)) {
               return msg.value.length > 0;
             }
-            return msg.value; 
+            return msg.value;
           }).length;
-          
+
           return Math.round((numerator/denominator)*100);
         };
-        
+
         scope.$watchCollection('jobs', function(newVal, oldVal) {
           // add tags to a new job - don't break old jobs
           var newJobs;
@@ -304,7 +306,7 @@ angular.module('counteroffer.me', ['ngCookies'])
             });
           }
         });
-        
+
         scope.selectTag = function(question, tag) {
           if (tag.selected) {
             if (!Array.isArray(question.value)) {
@@ -317,7 +319,7 @@ angular.module('counteroffer.me', ['ngCookies'])
             }, []);
           }
         };
-        
+
         scope.getPanelClass = function(question) {
           if (question.required) {
             if (Array.isArray(question.value)) {
@@ -334,12 +336,12 @@ angular.module('counteroffer.me', ['ngCookies'])
           }
           return 'panel-primary';
         };
-        
+
         var getUsername = function() {
           // TODO: make dynamic once I add more people
           return 'bob.stark';
         };
-        
+
         scope.submit = function() {
           scope.state = 'busy';
           var obj = {username: getUsername()};
@@ -357,7 +359,7 @@ angular.module('counteroffer.me', ['ngCookies'])
             scope.state = 'error';
           });
         };
-        
+
         scope.sendMessage = function(message, job) {
           return $http.post('/jobs/' + job.id + '/messages', message).then(function(response) {
             var newMsg = response.data;
@@ -365,7 +367,7 @@ angular.module('counteroffer.me', ['ngCookies'])
             scope.newMessage.value = '';
           });
         };
-        
+
         scope.messageFilter = function(message) {
           if (scope.currentJob && scope.currentJob.id) {
             return !!message.value;
@@ -373,7 +375,7 @@ angular.module('counteroffer.me', ['ngCookies'])
             return true;
           }
         };
-        
+
         scope.getHTML = function(msg) {
           if (msg) {
             msg = msg.replace(/(https?:\/\/\S+)/g, '<a href="$1" target="_blank">$1</a>');
@@ -382,13 +384,13 @@ angular.module('counteroffer.me', ['ngCookies'])
           }
           return msg;
         };
-        
+
         scope.getJobs = function(emailQuestion) {
           var email = emailQuestion.value;
           $cookies.put('email', email);
           location.reload();
         };
-        
+
         scope.loadJobURL = function(job) {
           $location.search('job', job.id);
           if (job) {
@@ -396,12 +398,12 @@ angular.module('counteroffer.me', ['ngCookies'])
           }
           scope.currentJob = job;
         };
-        
+
         scope.removeCookie = function() {
           $cookies.remove('email');
           location.reload();
         }
-        
+
       }
     };
   }])

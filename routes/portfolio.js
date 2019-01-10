@@ -132,7 +132,7 @@ class Portfolio {
             questions: theme.questions
           };
     return this.client.query({
-      text: 'insert into campaigns content = $1::json, portfolio_id = $2::bigint, theme_name = $3::text returning *',
+      text: 'insert into campaigns (content, portfolio_id, theme_name) values ($1::json, $2::bigint, $3::text) returning *',
       values: [content, this.id, theme.name]
     }).then((result) => {
       const campaign = result.rows[0];
@@ -142,7 +142,7 @@ class Portfolio {
         values: [campaign.url, campaign.id]
       }).then(() => {
         this.client.end();
-        return res.json(campaign);
+        return campaign;
       });
     });
   }

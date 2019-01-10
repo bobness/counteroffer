@@ -190,8 +190,7 @@ function($http, $cookies) {
 
   service.createCampaign = function(themeName, path = '.') {
     var body = {
-      theme: themeName,
-      path: path + '/' + themeName + '.json'
+      theme: themeName
     };
     return post(rootUrl + '/campaign', body).then(function(campaignObj) {
       campaign = campaignObj;

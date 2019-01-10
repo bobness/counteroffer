@@ -171,8 +171,8 @@ router.post('/campaign', (req, res, next) => {
   		if (options.theme) {
   			theme = options.theme;
   		}
-  		return portfolio.writeCampaign(theme).then(() => {
-    		return res.sendStatus(200);
+  		return portfolio.writeCampaign(theme).then((campaign) => {
+    		return res.json(campaign);
   		});
   	} else {
       const err = new Error("no options specified");

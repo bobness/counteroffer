@@ -1,6 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const nodemailer = require('nodemailer');
+const atob = require('atob');
+
+router.get('/campaign/:campaign_hash', (req, res, next) => {
+  const hash = req.params.campaign_hash,
+        id = atob(hash);
+  return req.client.query({
+    text: 'select * from campaigns where id = $1::bigint',
+    values: [id]
+  }).then((campaign) => {
+    res.json(campaign);
+  })
+});
 
 let transporter;
 router.use((req, res, next) => {
@@ -12,12 +24,6 @@ router.use((req, res, next) => {
   next();
 });
 
-/*
-router.get('/', function(req, res, next) {
-  res.json({ message: 'hi there' });
-});
-*/
-
 router.post('/jobs', (req, res, next) => {
   const values = req.body,
         email = values.email.toLowerCase(),
@@ -25,7 +31,7 @@ router.post('/jobs', (req, res, next) => {
         jobs = values.jobs;
   return Promise.all(jobs.map((job) => {
     return req.client.query({
-      text: 'insert into jobs (email) values($1) returning id', 
+      text: 'insert into jobs (email) values($1) returning id',
       values: [email]
     }).then((result) => {
       const newJob = result.rows[0];
@@ -77,7 +83,7 @@ router.get('/jobs', (req, res, next) => {
       });
     }));
   }).then(() => {
-    // req.client.end() // throws an error?
+    req.client.end();
     return res.json(jobs);
   })
 });
