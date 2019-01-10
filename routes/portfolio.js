@@ -13,20 +13,22 @@ class Portfolio {
   }
 
   save(obj = this.obj) {
-    this.client.query({
+    return this.client.query({
       text: 'update portfolios set json = $1::json where id = $2::bigint',
       values: [obj, this.id]
     }).then(() => {
-      this.client.release();
+      this.client.end();
     });
   }
 
   fetchData() {
     return this.client.query({
-      text: 'select json from portfolios where user_id = $1::bigint',
+      text: 'select * from portfolios where user_id = $1::bigint',
       values: [this.userId]
     }).then((result) => {
-      this.obj = result.rows[0].json;
+      const portfolio = result.rows[0];
+      this.id = portfolio.id;
+      this.obj = portfolio.json;
       if (!this.obj.themes) {
         this.obj.themes = [];
       }

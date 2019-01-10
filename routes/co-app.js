@@ -37,34 +37,35 @@ router.post('/session', (req, res, next) => {
         text: 'update users set current_session = $1::text where id = $2::bigint',
         values: [session, user.id]
       }).then(() => {
-        req.client.release();
+        req.client.end();
         return res.json(session);
       });
     } else {
-      req.client.release();
+      req.client.end();
       return res.sendStatus(403);
     }
   })
 });
 
-router.use((req, res, next) => {
+router.use(async (req, res, next) => {
   const session = req.get('x-session-id'),
         username = req.get('x-username');
-  return req.client.query({
+  const results = await req.client.query({
     text: 'select * from users where username = $1::text',
     values: [username]
-  }).then((results) => {
-    const user = results.rows[0],
-          currentSession = user.current_session;
-    if (currentSession === session) {
-      req.userId = user.id;
-      const portfolio = new Portfolio(req.client, user.id);
-      req.app.set('portfolio', portfolio);
-      return next();
-    } else {
-      return res.sendStatus(401);
-    }
   });
+  const user = results.rows[0],
+        currentSession = user.current_session;
+  if (currentSession === session) {
+    req.userId = user.id;
+    const portfolio = new Portfolio(req.client, user.id);
+    await portfolio.fetchData();
+    req.app.set('portfolio', portfolio);
+    return next();
+  } else {
+    req.client.end();
+    return res.sendStatus(401);
+  }
 });
 
 const pc = require('./pc-routes');
@@ -92,7 +93,7 @@ router.post('/jobs', (req, res, next) => {
     values: [email, req.userId]
   }).then((result) => {
     const newJob = result.rows[0];
-    req.client.release();
+    req.client.end();
     return res.json(newJob);
   });
 });
@@ -122,7 +123,7 @@ router.get('/jobs', function(req, res, next) {
       }
     });
     const jobs = Object.keys(jobObj).map((key) => jobObj[key]);
-    req.client.release();
+    req.client.end();
     return res.json(jobs);
   });
 });
@@ -133,7 +134,7 @@ router.put('/jobs/:job_id', (req, res, next) => {
     text: 'update jobs set company = $1::text, archived = $2::boolean where user_id = $3::bigint and id=$4::bigint',
     values: [job.company, job.archived, req.userId, req.params.job_id]
   }).then(() => {
-    req.client.release();
+    req.client.end();
     res.sendStatus(200);
   });
 });
@@ -154,7 +155,7 @@ router.delete('/jobs/:job_id', (req, res, next) => {
       values: [req.userId, jobID]
     });
   }).then(() => {
-    req.client.release();
+    req.client.end();
     return res.sendStatus(200);
   });
 });
@@ -191,11 +192,11 @@ router.post('/jobs/:job_id/messages', (req, res, next) => {
         subject: 'New message from ' + msg.sender,
         text: `${msg.value}\nView discussion: http://counteroffer.me/${username}/#!/contact?job=${jobID}`
       }).then(() => {
-        req.client.release();
+        req.client.end();
         return res.json(msg);
       });
     } else {
-      req.client.release();
+      req.client.end();
       return res.sendStatus(200);
     }
   });
@@ -203,14 +204,14 @@ router.post('/jobs/:job_id/messages', (req, res, next) => {
 
 router.get('/jobs/:job_id/messages', (req, res, next) => {
 	return getMessagesFromJobID(req.client, req.params.job_id).then((results) => {
-    req.client.release();
+    req.client.end();
     return res.json(results.rows);
   });
 });
 
 router.get('/jobs/:job_id/facts', (req, res, next) => {
   return getFactsFromJobID(req.client, req.params.job_id).then((results) => {
-    req.client.release()
+    req.client.end()
     return res.json(results.rows);
   });
 });
@@ -224,7 +225,7 @@ router.post('/jobs/:job_id/facts', (req, res, next) => {
     text: 'insert into facts (key, value, job_id) values ($1::text, $2::text, $3::bigint) returning *',
     values: [key, value, jobID]
   }).then((results) => {
-    req.client.release()
+    req.client.end()
     return results.rows && results.rows.length === 1 ? res.json(results.rows)[0] : null;
   });
 });
@@ -235,7 +236,7 @@ router.put('/jobs/:job_id/facts/:fact_id', (req, res, next) => {
     text: 'update facts set key = $1::text, value = $2::text where id = $3::bigint',
     values: [fact.key, fact.value, fact.id]
   }).then(() => {
-    req.client.release()
+    req.client.end()
     return res.sendStatus(200);
   });
 });
@@ -245,7 +246,7 @@ router.delete('/jobs/:job_id/facts/:fact_id', (req, res, next) => {
     text: 'delete from facts where id=$1::bigint and job_id=$2::bigint',
     values: [req.params.fact_id, req.params.job_id]
   }).then(() => {
-    req.client.release()
+    req.client.end()
     return res.sendStatus(200);
   })
 });

@@ -24,6 +24,13 @@ function($http, $cookies) {
     });
   };
 
+  var deleteRequest = function(url) {
+    return $http.delete(
+      url,
+      { headers: { 'x-username': username, 'x-session-id': session } }
+    );
+  };
+
   const rootUrl = '/api/portfolio';
 
   const session = $cookies.get('session');
@@ -67,7 +74,7 @@ function($http, $cookies) {
 
   service.deleteExperience = function(experience) {
 	  var index = portfolio.experiences.indexOf(experience);
-	  return $http.delete(rootUrl + '/experiences/' + index);
+	  return deleteRequest(rootUrl + '/experiences/' + index);
   };
 
   service.createTheme = function(theme) {
@@ -76,7 +83,7 @@ function($http, $cookies) {
 
   service.deleteTheme = function(themeName) {
 	  var index = portfolio.themes.map(function(theme) { return theme.name; }).indexOf(themeName);
-	  return $http.delete(rootUrl + '/themes/' + index);
+	  return deleteRequest(rootUrl + '/themes/' + index);
   };
 
   service.updateTheme = function(theme) {
@@ -117,7 +124,7 @@ function($http, $cookies) {
       return this.updateTheme(theme);
     } else {
       var index = portfolio.facts.indexOf(fact);
-      return $http.delete(rootUrl + '/facts/' + index);
+      return deleteRequest(rootUrl + '/facts/' + index);
     }
   };
 
@@ -166,7 +173,7 @@ function($http, $cookies) {
       return this.updateTheme(theme);
     } else {
       var index = portfolio.questions.indexOf(question);
-      return $http.delete(rootUrl + '/questions/' + index);
+      return deleteRequest(rootUrl + '/questions/' + index);
     }
   };
 

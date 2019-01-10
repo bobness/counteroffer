@@ -10,14 +10,15 @@ router.use((req, res, next) => {
 });
 
 router.get('/', (req, res, next) => {
-  portfolio.fetchData().then((obj) => {
-    return res.json(obj);
-  });
+  // portfolio.fetchData().then((obj) => {
+  //   return res.json(obj);
+  // });
+  return res.json(portfolio.obj);
 });
 
 router.post('/facts', (req, res, next) => {
   const fact = portfolio.addFact(req.body);
-  portfolio.save().then((portfolio) => {
+  portfolio.save().then(() => {
     return res.json(fact);
   });
 });
@@ -57,7 +58,7 @@ router.delete('/facts/:fact_ix', (req, res, next) => {
 
 router.post('/questions', (req, res, next) => {
   const question = portfolio.addQuestion(req.body);
-  portfolio.save().then((portfolio) => {
+  portfolio.save().then(() => {
     return res.json(question);
   });
 });
@@ -90,7 +91,7 @@ router.delete('/questions/:question_ix', (req, res, next) => {
 
 router.post('/experiences', (req, res, next) => {
   const exp = portfolio.addExperience(req.body);
-  portfolio.save().then((portfolio) => {
+  portfolio.save().then(() => {
     return res.json(exp);
   });
 });
@@ -127,7 +128,7 @@ router.delete('/experiences/:exp_ix', (req, res, next) => {
 
 router.post('/themes', (req, res, next) => {
   const theme = portfolio.addTheme(req.body);
-  return portfolio.save().then((portfolio) => {
+  return portfolio.save().then(() => {
     return res.json(theme);
   });
 });
