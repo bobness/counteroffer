@@ -24,6 +24,9 @@
       <span class="glyphicon glyphicon-export" aria-hidden="true"></span>
       Publish Counteroffer
     </button>
+    <div style="display:inline-block;" ng-if="campaign">
+      <a href="http://counteroffer.me/#!/{{campaign.url}}" target="_blank">Visit Counteroffer</a>
+    </div>
   </div>
 
   <div style="text-align:center;margin:1em;" ng-if="theme && campaign">

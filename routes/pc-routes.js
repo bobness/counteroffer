@@ -163,25 +163,20 @@ router.delete('/themes/:theme_ix', (req, res, next) => {
   });
 });
 
-router.post('/campaign', (req, res, next) => {
-	const options = req.body;
+router.post('/themes/:theme_ix/campaign', (req, res, next) => {
 	try {
-  	if (options) {
-  		let theme = '';
-  		if (options.theme) {
-  			theme = options.theme;
-  		}
-  		return portfolio.writeCampaign(theme).then((campaign) => {
-    		return res.json(campaign);
-  		});
-  	} else {
-      const err = new Error("no options specified");
-      err.status = 400;
-      throw err;
-  	}
+		return portfolio.writeCampaign(req.theme).then((campaign) => {
+  		return res.json(campaign);
+		});
 	} catch (err) {
   	return next(err);
   }
+});
+
+router.get('/themes/:theme_ix/campaign', (req, res, next) => {
+  return portfolio.getCampaign(req.theme).then((campaign) => {
+    return res.json(campaign);
+  });
 });
 
 module.exports = router;

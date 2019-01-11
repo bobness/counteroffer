@@ -47,16 +47,6 @@ function($http, $cookies) {
     });
   };
 
-  service.getCampaign = function() {
-    return $http.get(
-      rootUrl + '/campaign',
-      { headers: { 'x-username': username, 'x-session-id': session } }
-    ).then(function(res) {
-      campaign = res.data;
-      return campaign;
-    });
-  };
-
   service.addTag = function(tag, experience) {
 	  var index = portfolio.experiences.indexOf(experience);
     var expUrl = rootUrl + '/experiences/' + index;
@@ -188,12 +178,23 @@ function($http, $cookies) {
     }
   };
 
-  service.createCampaign = function(themeName, path = '.') {
-    var body = {
-      theme: themeName
-    };
-    return post(rootUrl + '/campaign', body).then(function(campaignObj) {
+  service.createCampaign = function(theme) {
+    var index = portfolio.themes.map(function(t) { return t.name; }).indexOf(theme.name);
+    return post(
+      rootUrl + '/themes/' + index + '/campaign'
+    ).then(function(campaignObj) {
       campaign = campaignObj;
+      return campaign;
+    });
+  };
+
+  service.getCampaign = function(theme) {
+    var index = portfolio.themes.map(function(t) { return t.name; }).indexOf(theme.name);
+    return $http.get(
+      rootUrl + '/themes/' + index + '/campaign',
+      { headers: { 'x-username': username, 'x-session-id': session } }
+    ).then(function(res) {
+      campaign = res.data;
       return campaign;
     });
   };

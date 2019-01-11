@@ -118,9 +118,8 @@ class Portfolio {
     this.obj.questions.splice(index, 1);
   }
 
-  writeCampaign(themeName) {
-    const theme = this.obj.themes.find((theme) => theme.name === themeName),
-          experiences = theme.tags.reduce((experiences, tag) => {
+  writeCampaign(theme) {
+    const experiences = theme.tags.reduce((experiences, tag) => {
             return experiences.concat(this.obj.experiences.filter((exp) => {
               return exp.tags.indexOf(tag) > -1 && experiences.indexOf(exp) === -1;
             }));
@@ -144,6 +143,17 @@ class Portfolio {
         this.client.end();
         return campaign;
       });
+    });
+  }
+
+  getCampaign(theme) {
+    return this.client.query({
+      text: 'select * from campaigns where portfolio_id = $1::bigint and theme_name = $2::text',
+      values: [this.id, theme.name]
+    }).then((result) => {
+      const campaign = result.rows[0];
+      this.client.end();
+      return campaign;
     });
   }
 }

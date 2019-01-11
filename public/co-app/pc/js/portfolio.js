@@ -50,7 +50,7 @@ angular.module('counteroffer.app').directive('portfolio', ['$uibModal', '$locati
 
         scope.selectedTags = [];
 
-        scope.showTheme = function(name) {
+        var showTheme = function(name) {
           $location.path(name);
           scope.theme = scope.portfolioObj.themes.filter((theme) => theme.name === name)[0];
         };
@@ -67,7 +67,7 @@ angular.module('counteroffer.app').directive('portfolio', ['$uibModal', '$locati
             return portfolioService.createTheme(theme).then(function(theme) {
               scope.portfolioObj.themes.push(theme);
               scope.selectedTags = [];
-              scope.showTheme(theme.name);
+              showTheme(theme.name);
             });
           }
         };
@@ -103,6 +103,11 @@ angular.module('counteroffer.app').directive('portfolio', ['$uibModal', '$locati
           var newThemeName = newTheme ? newTheme.name : '';
           if (oldThemeName !== newThemeName) {
             updateTagCounts();
+          }
+          if (scope.theme) {
+            portfolioService.getCampaign(scope.theme).then(function(campaign) {
+              scope.campaign = campaign;
+            });
           }
         })
 
@@ -249,15 +254,14 @@ angular.module('counteroffer.app').directive('portfolio', ['$uibModal', '$locati
           var name = scope.theme.name;
           return portfolioService.deleteTheme(name).then(function() {
             scope.portfolioObj.themes = scope.portfolioObj.themes.filter(function(theme) { return theme.name !== name; });
-            scope.showTheme('');
+            showTheme('');
           });
         };
 
         // TODO: enable updating an existing campaign
         scope.createCampaign = function() {
           if (scope.theme) {
-            var themeName = scope.theme.name;
-            return portfolioService.createCampaign(themeName).then(function(campaignObj) {
+            return portfolioService.createCampaign(scope.theme).then(function(campaignObj) {
               scope.campaign = campaignObj;
             });
           }

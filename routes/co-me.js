@@ -27,12 +27,13 @@ router.use((req, res, next) => {
 router.post('/jobs', (req, res, next) => {
   const values = req.body,
         email = values.email.toLowerCase(),
+        campaignId = atob(values.campaign),
         username = values.username,
         jobs = values.jobs;
   return Promise.all(jobs.map((job) => {
     return req.client.query({
-      text: 'insert into jobs (email) values($1) returning id',
-      values: [email]
+      text: 'insert into jobs (email, campaign_id) values($1::text, $2::bigint) returning id',
+      values: [email, campaignId]
     }).then((result) => {
       const newJob = result.rows[0];
       job.id = newJob.id;
@@ -52,8 +53,8 @@ router.post('/jobs', (req, res, next) => {
       });
     });
   })).then(() => {
-    // req.client.end() // throws an error?
     return Promise.all(jobs.filter((job) => job.id).map((job) => {
+      req.client.end();
       const jobText = job.messages.map((msg) => `${msg.text}: ${msg.value}`).join('\n');
       return transporter.sendMail({
         from: 'no-reply@counteroffer.me',
@@ -67,10 +68,11 @@ router.post('/jobs', (req, res, next) => {
 
 router.get('/jobs', (req, res, next) => {
   const email = req.query.email.toLowerCase();
+  const campaignId = atob(req.query.campaign);
   let jobs = [];
   return req.client.query({
-    text: 'select * from jobs where email = $1::text',
-    values: [email]
+    text: 'select * from jobs where email = $1::text and campaign_id = $2::bigint',
+    values: [email, campaignId]
   }).then((result) => {
     jobs = result.rows;
     return Promise.all(jobs.map((job) => {
@@ -97,7 +99,7 @@ router.put('/jobs/:job_id', (req, res, next) => {
       values: [msg.type, msg.text, msg.value, msg.id]
     });
   })).then(() => {
-    // req.client.end() // throws an error?
+    req.client.end();
     return res.sendStatus(200);
   });
 });
@@ -118,7 +120,7 @@ router.delete('/jobs/:job_id', (req, res, next) => {
       values: [jobID]
     });
   }).then(() => {
-    // req.client.end() // throws an error?
+    req.client.end();
     return res.sendStatus(200);
   });
 });
@@ -139,6 +141,7 @@ router.post('/jobs/:job_id/messages', (req, res, next) => {
     values: [false, jobID]
   }));
   Promise.all(promises).then((results) => {
+    req.client.end();
     const msg = results[0].rows[0];
     return transporter.sendMail({
       from: 'no-reply@counteroffer.me',
