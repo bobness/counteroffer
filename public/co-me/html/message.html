@@ -1,0 +1,24 @@
+<div class="panel question" ng-class="getPanelClass(data)">
+  <div class="panel-heading">
+    {{ data.text || data.sender }} {{ data.required ? '*' : '' }}
+  </div>
+  <div class="panel-body">
+    <div ng-if="data.type === 'text'">
+      <span ng-show="savedEmail && job.id" ng-bind-html="getHTML(data.value || '(No value)')"></span>
+      <input type="text" ng-model="data.value" ng-show="!savedEmail || !job.id">
+    </div>
+    <div ng-if="data.type === 'skills'">
+      <span ng-show="savedEmail && job.id">{{ data.value }}</span>
+      <div ng-repeat="tag in job.tags track by $index" ng-show="!savedEmail || !job.id">
+        <label>
+          <input type="checkbox" ng-model="tag.selected" ng-change="selectTag(data, tag)">
+          {{ tag.name }}
+        </label>
+      </div>
+    </div>
+    <div ng-if="data.type === 'textarea'">
+      <span ng-show="savedEmail && job.id" ng-bind-html="getHTML(data.value || '(No value)')"></span>
+      <textarea style="width:500px;height:200px;" ng-model="data.value" ng-show="!savedEmail || !job.id"></textarea>
+    </div>
+  </div>
+</div>

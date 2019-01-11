@@ -1,0 +1,46 @@
+<div>
+  <div style="float:right;clear:both;">
+	  <button class="btn btn-sm btn-default" ng-click="deleteExperience(data)">
+  	  <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+  	  Delete Experience
+    </button>
+  </div>
+  <h1>
+	  <a href="#" editable-text="data.title" onaftersave="updateExperience(data)">
+      {{ data.title }}
+    </a>
+  </h1>
+  <h2>
+  	<a href="#" editable-text="data.company" onaftersave="updateExperience(data)">
+	  	{{ data.company }}
+  	</a>
+  </h2>
+	<a href="#" editable-text="data.start" onaftersave="updateExperience(data)">
+  	{{ data.start }}
+	</a> - 
+	<a href="#" editable-text="data.end" onaftersave="updateExperience(data)">
+  	{{ data.end }}
+	</a>
+	<div ng-show="data.description">
+		<a href="#" editable-textarea="data.description" onaftersave="updateExperience(data)" e-style="width:90%; height:200px;">
+	  	<span ng-bind-html="getFormattedDescription()"></span>
+		</a>
+	</div>
+	<div style="float:right;clear:both;margin-top:5px;">
+    <button class="btn btn-sm btn-default" ng-show="data.description" ng-click="addSelectedTag()">
+      <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+      Add Selected Text
+    </button>
+  </div>
+  <tags-input 
+    style="width:calc(100% - 140px);"
+    ng-model="tagObjects" 
+    display-property="text"
+    placeholder="Add a tag" 
+    on-tag-added="createTag($tag)"
+    on-tag-removed="deleteTag($tag)"
+    replace-spaces-with-dashes="false"
+    template="tag-template"
+    >
+  </tags-input>
+</div>

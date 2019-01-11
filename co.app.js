@@ -6,14 +6,12 @@ const express = require('express'),
       http = require('http'),
       { Client } = require('pg');
 
-app.use('/', (req, res, next) => next(), express.static('public/co-app'));
-
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(async (req, res, next) => {
-  const client = new Client({
+  const client = new Client({ // TODO: put into a parameters file
         user: 'root',
         password: 'i0t4*375',
         host: 'databases.cb304s4nzrdn.us-east-2.rds.amazonaws.com',
@@ -25,8 +23,9 @@ app.use(async (req, res, next) => {
   next();
 });
 
+app.use('/', (req, res, next) => next(), express.static('public/co-app'));
 const index = require('./routes/co-app');
-app.use('/', index);
+app.use('/api', index);
 
 const server = http.createServer(app);
 server.listen(process.env.PORT || 3002);

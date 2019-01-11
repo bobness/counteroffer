@@ -6,8 +6,7 @@ const express = require('express'),
       http = require('http'),
       { Client } = require('pg');
 
-app.use('/', (req, res, next) => next(), express.static('public/co-me/bob.stark'));
-app.use('/bob.stark', (req, res, next) => next(), express.static('public/co-me/bob.stark'));
+app.use('/', (req, res, next) => next(), express.static('public/co-me'));
 
 app.use(logger('dev'));
 app.use(bodyParser.json());

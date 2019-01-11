@@ -1,11 +1,11 @@
-angular.module('counteroffer.me', ['ngCookies'])
-  .controller('controller', ['$scope', '$http', '$location', '$cookies', function($scope, $http, $location, $cookies) {
+angular.module('counteroffer', [])
+  .controller('controller', ['$scope', '$http', '$location', function($scope, $http, $location) {
     $http.get(('Counteroffer.json')).then(function(res) {
       var json = res.data;
       $scope.experiences = json.experiences;
       $scope.tagCounts = countTags(json.experiences, json.tags);
       $scope.facts = json.facts;
-      $scope.messages = json.questions;
+      $scope.questions = json.questions;
     });
     
     var countTags = function(experiences, tags) {
@@ -52,20 +52,18 @@ angular.module('counteroffer.me', ['ngCookies'])
       return $scope.experiences;
     };
     $scope.selectedTags = [];
-    
-    $scope.goToPage = function(page) {
-      if (page === $scope.getCurrentPage()) {
-        return location.reload();
-      }
-      $location.search(''); // clear ?job=x param
-      return $location.path(page);
+    $scope.showSurvey = function() {
+      $location.hash('contact');
     };
     
-    $scope.getCurrentPage = function() {
-      return $location.path().substring(1);
+    $scope.hideSurvey = function() {
+      $location.hash('');
     };
     
-/*
+    $scope.surveyVisible = function() {
+      return $location.hash() === 'contact';
+    };
+    
     $scope.sendEmail = function(obj) {
       var emailQuestion = obj.emailQuestion,
           jobs = obj.jobs;
@@ -73,54 +71,18 @@ angular.module('counteroffer.me', ['ngCookies'])
         $scope.hideSurvey();
       });
     };
-*/
-    
-    $scope.submitSurvey = function(obj) {
-      var email = obj.email,
-          username = obj.username,
-          jobs = obj.jobs,
-          job = obj.job,
-          saved = obj.saved;
-      if (saved && job) {
-        if (job.id) {
-          return $http.put('/jobs/' + job.id, {
-            job: job
-          }).then(function() {
-            location.reload();
-          });
-        } else {
-          return $http.post('/jobs', {
-            email: email,
-            username: username,
-            jobs: [job]
-          }).then(function() {
-            location.reload();
-          });
-        }
-      } else {
-        $cookies.put('email', email);
-        return $http.post('/jobs', {
-          email: email,
-          username: username,
-          jobs: jobs
-        }).then(function() {
-          location.reload();
-        });
-      }
-    };
     
   }])
-  .directive('experience', ['$sce', function($sce) {
+  .directive('experience', [function() {
     return {
       templateUrl: 'experience.html',
       scope: {
-        data: '=',
-        page: '<'
+        data: '='
       },
       link: function(scope) {
         scope.getFormattedDescription = function() {
   	      if (scope.data.description) {
-  	        return $sce.trustAsHtml(scope.data.description.split('\n').join('<br>'));
+  	        return scope.data.description.split('\n').join('<br>');
   	      }
   	      return '';
         };
@@ -190,54 +152,21 @@ angular.module('counteroffer.me', ['ngCookies'])
       }
     };
   }])
-  .directive('survey', ['$cookies', '$http', '$sce', '$location', '$anchorScroll', 
-  function($cookies, $http, $sce, $location, $anchorScroll) {
+  .directive('survey', function() {
     return {
       templateUrl: 'survey.html',
       scope: {
         tagCounts: '<',
-        messages: '<',
+        questions: '<',
         submitFunc: '&'
       },
       link: function(scope, elem, attrs) {
         scope.state = 'ok';
-        scope.jobs = [];
-        
-        if ($cookies.get('email')) {
-          scope.state = 'busy';
-          scope.savedEmail = $cookies.get('email');
-          scope.newMessage = {
-            value: '',
-            email: scope.savedEmail
-          };
-          $http.get('/jobs?email=' + scope.savedEmail).then(function(response) {
-            var data = response.data;
-            if (data && data.length > 0) {
-              scope.jobs = data;
-              var jobID = Number($location.search().job);
-              if (jobID) {
-                scope.currentJob = scope.jobs.filter(function(job) { return job.id == jobID; })[0];
-              } else {
-                scope.currentJob = scope.jobs[0];
-              }
-              scope.state = 'ok';
-            }
-          });
-        }
-        
-        $anchorScroll('survey');
-        
-        scope.jobIsSelected = function(job) {
-          if (!scope.currentJob) {
-            scope.currentJob = scope.jobs[0];
-          }
-          return scope.currentJob === job;
-        };
-        
         scope.emailQuestion = {
           required: true,
-          value: scope.savedEmail || null
+          value: null
         };
+        scope.jobs = [];
         
         var copyQuestion = function(question) {
           var obj = {};
@@ -248,38 +177,29 @@ angular.module('counteroffer.me', ['ngCookies'])
         };
         
         scope.addJob = function() {
-          scope.jobs.push({messages: scope.messages.map(function(msg) {
-            return copyQuestion(msg);
+          scope.jobs.push({questions: scope.questions.map(function(question) {
+            return copyQuestion(question);
           })});
-          scope.currentJob = scope.jobs[scope.jobs.length - 1];
         };
         
-        scope.$watch('messages', function() {
-          if (scope.messages) {
-            scope.addJob(); // 1 minimum
-          }
-        });
-        
-        scope.deleteJob = function() {
-          var index = scope.jobs.indexOf(scope.currentJob);
-          $http.delete('/jobs/' + scope.currentJob.id).then(function() {
-            scope.jobs.splice(index, 1);
-            scope.currentJob = scope.jobs[0];
-          });
+        scope.deleteJob = function(index) {
+          scope.jobs.splice(index, 1);
         };
+        
+        scope.addJob(); // 1 minimum
         
         scope.progress = function() {
-          var messages = [].concat(scope.emailQuestion);
-          messages = scope.jobs.reduce(function(messages, job) {
-            return messages.concat(job.messages);
-          }, messages);
-          var requiredQuestions = messages.filter(function(msg) { return msg.required; });
+          var questions = [].concat(scope.emailQuestion);
+          questions = scope.jobs.reduce(function(questions, job) {
+            return questions.concat(job.questions);
+          }, questions);
+          var requiredQuestions = questions.filter(function(question) { return question.required; });
           var denominator = requiredQuestions.length;
-          var numerator = requiredQuestions.filter(function(msg) { 
-            if (Array.isArray(msg.value)) {
-              return msg.value.length > 0;
+          var numerator = requiredQuestions.filter(function(question) { 
+            if (Array.isArray(question.value)) {
+              return question.value.length > 0;
             }
-            return msg.value; 
+            return question.value; 
           }).length;
           
           return Math.round((numerator/denominator)*100);
@@ -293,16 +213,14 @@ angular.module('counteroffer.me', ['ngCookies'])
           } else if (newVal.length > oldVal.length) {
             newJobs = newVal.filter(function(job) { return oldVal.indexOf(job) === -1; });
           }
-          if (newJobs) {
-            newJobs.forEach(function(job) {
-              job.tags = scope.tagCounts.map(function(tag) {
-                return {
-                  name: tag.name,
-                  selected: false
-                };
-              });
+          newJobs.forEach(function(job) {
+            job.tags = scope.tagCounts.map(function(tag) {
+              return {
+                name: tag.name,
+                selected: false
+              };
             });
-          }
+          });
         });
         
         scope.selectTag = function(question, tag) {
@@ -335,73 +253,18 @@ angular.module('counteroffer.me', ['ngCookies'])
           return 'panel-primary';
         };
         
-        var getUsername = function() {
-          // TODO: make dynamic once I add more people
-          return 'bob.stark';
-        };
-        
         scope.submit = function() {
           scope.state = 'busy';
-          var obj = {username: getUsername()};
-          if (scope.savedEmail) {
-            angular.extend(obj, {saved: true, job: scope.currentJob, email: scope.savedEmail});
-          } else {
-            angular.extend(obj, {email: scope.emailQuestion.value, jobs: scope.jobs});
-          }
-          return scope.submitFunc(obj).then(function() {
+          return scope.submitFunc({emailQuestion: scope.emailQuestion, jobs: scope.jobs}).then(function() {
             scope.state = 'ok';
-            scope.messages.forEach(function(msg) {
-              msg.value = null;
+            scope.questions.forEach(function(question) {
+              question.value = null;
             });
           }).catch(function(err) {
             scope.state = 'error';
           });
         };
         
-        scope.sendMessage = function(message, job) {
-          return $http.post('/jobs/' + job.id + '/messages', message).then(function(response) {
-            var newMsg = response.data;
-            scope.currentJob.messages.push(newMsg);
-            scope.newMessage.value = '';
-          });
-        };
-        
-        scope.messageFilter = function(message) {
-          if (scope.currentJob && scope.currentJob.id) {
-            return !!message.value;
-          } else {
-            return true;
-          }
-        };
-        
-        scope.getHTML = function(msg) {
-          if (msg) {
-            msg = msg.replace(/(https?:\/\/\S+)/g, '<a href="$1" target="_blank">$1</a>');
-            msg = msg.replace(/\n/g, '<br>');
-            return $sce.trustAsHtml(msg);
-          }
-          return msg;
-        };
-        
-        scope.getJobs = function(emailQuestion) {
-          var email = emailQuestion.value;
-          $cookies.put('email', email);
-          location.reload();
-        };
-        
-        scope.loadJobURL = function(job) {
-          $location.search('job', job.id);
-          if (job) {
-            $anchorScroll('survey');
-          }
-          scope.currentJob = job;
-        };
-        
-        scope.removeCookie = function() {
-          $cookies.remove('email');
-          location.reload();
-        }
-        
       }
     };
-  }])
+  });

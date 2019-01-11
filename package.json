@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {},
   "dependencies": {
+    "atob": "^2.1.2",
     "body-parser": "~1.17.1",
+    "btoa": "^1.2.1",
     "express": "~4.15.2",
     "http": "0.0.0",
     "http-proxy": "^1.17.0",

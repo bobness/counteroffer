@@ -1,0 +1,53 @@
+body {
+  margin: 50px;
+}
+
+.tagBar {
+	background-color: #337ab7;
+}
+
+.tagBar.danger {
+	background-color: #d9534f;
+}
+
+.tag-list {
+  background-color: white;
+  border: 1px dark gray;
+  cursor: text;
+  padding: 1px;
+}
+
+.tag-item {
+  margin: 2px;
+  padding: 0 5px;
+  display: inline-block;
+  font: 14px "Helvetica Neue", Helvetica, Arial, sans-serif;
+  height: 26px;
+  line-height: 25px;
+  border-radius: 3px;
+  background-color: #337ab7;
+  color: white;
+  font-weight: bold;
+}
+
+.description {
+  white-space: pre-line;
+}
+
+.smcx-widget {
+  margin: 0 auto !important;
+}
+
+table#facts tbody th {
+  width: 20%;
+}
+
+table#facts tbody td {
+  width: 80%;
+}
+
+@media print {
+  histogram, #navLinks, smcx-widget {
+    display: none !important;
+  }
+}

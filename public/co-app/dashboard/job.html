@@ -1,0 +1,49 @@
+<div>
+  <div class="panel-heading" id="heading{{job.id}}" data-toggle="collapse" data-target="#collapse{{job.id}}" aria-expanded="false" aria-controls="collapse{{job.id}}" style="cursor:pointer;" ng-click="toggleJob(job)">
+    <p>Job #{{ job.id }} from {{ job.email }}
+      <a href="#" editable-text="job.company" onaftersave="updateJob(job)">({{ job.company || 'Company name' }})</a>
+    </p>
+    <p>Latest message: {{ displayDate(job) }}</p>
+    <ul class="tag-list">
+      <li class="tag-item" ng-repeat="fact in job.facts track by $index" ng-class="getFactClass(fact.key)">{{ fact.value }}</li>
+    </ul>
+  </div>
+
+  <div id="collapse{{job.id}}" class="collapse" aria-labelledby="heading{{job.id}}" data-parent="#accordion">
+    <div ng-show="gettingMessages">
+      <img src="../loading.gif" />
+    </div>
+    <div class="panel-body" ng-hide="gettingMessages">
+      <ul class="list-unstyled" style="clear:both;">
+        <li ng-repeat="message in job.messages | orderBy: 'datetime'" ng-style="getMessageStyle(job, message.sender)">
+          <span class="message" ng-bind-html="getHTML(message.value || '(No reply)')"></span>
+        </li>
+      </ul>
+      <div style="height:100px;margin:10px;" ng-show="!path">
+        <form style="height:100%">
+          <textarea ng-model="newMessage.value" style="width:calc(100% - 80px);height:100%;"></textarea>
+          <div style="float:right;width:80px;">
+            <button class="btn btn-sm btn-default" ng-click="sendMessage(newMessage, job)" style="margin:10px;">
+              <span class="glyphicon glyphicon-upload" aria-hidden="true"></span>
+              Reply
+            </button>
+            <button class="btn btn-sm btn-default panel" ng-click="archiveJob(job, true, newMessage)" style="margin:10px;">
+              <span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
+              Archive
+            </button>
+          </div>
+        </form>
+      </div>
+      <div style="clear:both;" ng-show="jobs.length > 1">
+        <button class="btn btn-sm btn-default panel" ng-click="archiveJob(job, false)">
+          <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
+          Unarchive
+        </button>
+        <button class="btn btn-sm btn-default panel" ng-click="deleteJob(job)">
+          <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+          Delete Job
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,190 +1,66 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="height:100%;">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    
+
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
-    
-    <link rel="stylesheet" href="style.css" />
-    <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon" />
+
+    <!-- build:css -->
     <link href="bower_components/angular-xeditable/dist/css/xeditable.css" rel="stylesheet">
-    
+    <link rel="stylesheet" href="pc/bower_components/ng-tags-input/ng-tags-input.css">
+    <!-- endbuild -->
+
+    <link rel="stylesheet" href="../style.css" />
+    <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon" />
+
     <title>Counteroffer</title>
-    
-    <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="bower_components/angular/angular.min.js"></script>
     <script src="bower_components/angular-cookies/angular-cookies.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-    <script src="bower_components/angular-xeditable/dist/js/xeditable.min.js"></script>
+    <!-- <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script> -->
+    <script src="pc/bower_components/angular-resource/angular-resource.min.js"></script>
+    <script src="pc/bower_components/angular-sanitize/angular-sanitize.min.js"></script>
+    <script src="pc/bower_components/angular-xeditable/dist/js/xeditable.min.js"></script>
+    <script src="pc/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+    <script src="pc/bower_components/ng-tags-input/ng-tags-input.min.js"></script>
+    <script src="pc/bower_components/ng-drag-to-reorder/ngDragToReorder.js"></script>
+
     <script src="app.js"></script>
-    
+    <script src="pc/js/portfolioService.js"></script>
+    <script src="pc/js/experience.js"></script>
+    <script src="pc/js/histogram.js"></script>
+    <script src="pc/js/survey.js"></script>
+    <script src="pc/js/portfolio.js"></script>
+    <script src="mainController.js"></script>
   </head>
-  
-  <body ng-app="counteroffer.app" ng-controller="controller">
-    
-    <!--
-      use cases:
-        x - track jobs - for 1 core counteroffer
-        
-        x - respond to recruiter (i.e., add message to job 'message') - for 1 core counteroffer
-        
-        x - track jobs better by organizing them by facts (co.app)
-        
-        - publish multiple counteroffers to counteroffer.me
-          - merge portfolio-creator (via npm install) onto this interface
-          - create another table 'counteroffers' and link to 'jobs'
-          - scrape from LinkedIn to import resume? or would importing a PDF/doc(x) be easier? - to get Ryan onto the platform
-          - consider adding a tab UI to co.app to show counteroffers
-    -->
-    <h1 style="text-align:center;">Counteroffer</h1>
-    <div ng-show="!jobs && notLoggedIn" style="margin:0 auto;width:300px;">
+  <body ng-app="counteroffer.app" ng-controller="mainController" style="height:100%;">
+    <div ng-if="notLoggedIn" style="margin:0 auto;width:300px;">
       <form>
         <p>Username: <input type="text" ng-model="username"></p>
         <p>Password: <input type="password" ng-model="password"></p>
         <p style="text-align:center;"><button type="submit" class="btn btn-sm btn-default" ng-click="login(username, password)">Login</button></p>
       </form>
     </div>
-    <div class="col-lg-12" style="margin: 0 auto;text-align:center;" ng-show="jobs">
-      <div style="display:block;margin:auto;">
-        <ul class="nav nav-pills" style="margin-bottom:10px;display:inline-block;">
-          <li ng-class="{active: !path}">
-            <a ng-click="setPath('')" style="cursor:pointer;">Active</a>
+    <div ng-if="!notLoggedIn">
+      <h3 style="text-align:center;">Bob Stark</h3>
+      <div style="text-align:center;margin:20px auto;border-bottom:1px black solid;">
+        <ul class="nav nav-pills" style="display:inline-block;">
+          <li class="pill-title">Counteroffers:</li>
+          <li ng-class="{active: !themeIsSelected()}">
+            <a ng-click="showTheme('')" style="cursor:pointer;">Base</a>
           </li>
-          <li ng-class="{active: path === 'archived'}">
-            <a ng-click="setPath('archived')" style="cursor:pointer;">Archived</a>
+          <li ng-repeat="theme in portfolio.themes" ng-class="{active: themeIsSelected(theme.name)}">
+            <a ng-click="showTheme(theme.name)" style="cursor:pointer;">{{ theme.name }}</a>
           </li>
         </ul>
       </div>
-      <div class="col-sm-8" id="accordion" style="margin-top:15px;">
-        <div ng-show="!jobs || jobs.length === 0">
-          There are no jobs yet. Wait until you get an offer from a recruiter. 
-        </div>
-        <div ng-show="jobs.length > 0">
-          Sort by: <ul class="tag-list">
-            <li class="tag-item" ng-click="sortByFactKey('')" style="cursor:pointer;color:black;">Latest Message</li>
-          	<li ng-repeat="(key, class) in factClasses track by $index" class="tag-item {{ class }}" ng-click="sortByFactKey(key)" style="cursor:pointer;">
-          	  {{ key }}
-            </li>
-          </ul>
-        </div>
-        <div style="text-align:center;margin:10px;" ng-show="!path">
-          <div>
-            <form><input type="text" ng-model="newJob.email" placeholder="Recruiter email">
-            <button class="btn btn-sm btn-default" type="submit" ng-click="addJob(newJob)">
-              <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-              Add Job
-            </button></form>
-          </div>
-        </div>
-        <div ng-repeat="job in jobs | filter: getJobFilter(path === 'archived') | orderBy: sortJobs() : true track by $index" ng-show="!busy" class="panel panel-default">
-          <div class="panel-heading" id="heading{{job.id}}" data-toggle="collapse" data-target="#collapse{{job.id}}" aria-expanded="false" aria-controls="collapse{{job.id}}" style="cursor:pointer;" ng-click="toggleJob(job)">
-            <p>Job #{{ job.id }} from {{ job.email }} 
-              <a href="#" editable-text="job.company" onaftersave="updateJob(job)">({{ job.company || 'Company name' }})</a>
-            </p>
-            <p>Latest message: {{ displayDate(job) }}</p>
-            <ul class="tag-list">
-            	<li class="tag-item" ng-repeat="fact in job.facts track by $index" ng-class="getFactClass(fact.key)">{{ fact.value }}</li>
-            </ul>
-          </div>
-      
-          <div id="collapse{{job.id}}" class="collapse" aria-labelledby="heading{{job.id}}" data-parent="#accordion">
-            <div ng-show="gettingMessages">
-              <img src="loading.gif" />
-            </div>
-            <div class="panel-body" ng-hide="gettingMessages">
-              <ul class="list-unstyled" style="clear:both;">
-                <li ng-repeat="message in job.messages | orderBy: 'datetime'" ng-style="getMessageStyle(job, message.sender)">
-                  <span class="message" ng-bind-html="getHTML(message.value || '(No reply)')"></span>
-                </li>
-              </ul>
-              <div style="height:100px;margin:10px;" ng-show="!path">
-                <form style="height:100%">
-                  <textarea ng-model="newMessage.value" style="width:calc(100% - 80px);height:100%;"></textarea>
-                  <div style="float:right;width:80px;">
-                    <button class="btn btn-sm btn-default" ng-click="sendMessage(newMessage, job)" style="margin:10px;">
-                      <span class="glyphicon glyphicon-upload" aria-hidden="true"></span>
-                      Reply
-                    </button>
-                    <button class="btn btn-sm btn-default panel" ng-click="archiveJob(job, true, newMessage)" style="margin:10px;">
-                      <span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
-                      Archive
-                    </button>
-                  </div>
-                </form>
-              </div>
-              <div style="clear:both;" ng-show="jobs.length > 1">
-                <button class="btn btn-sm btn-default panel" ng-click="archiveJob(job, false)">
-                  <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
-                  Unarchive
-                </button>
-                <button class="btn btn-sm btn-default panel" ng-click="deleteJob(job)">
-                  <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                  Delete Job
-                </button>
-              </div>
-            </div>
-          </div>
-          
-        </div>
-        <div ng-show="busy">
-          <img src="loading.gif" />
-        </div>
-      </div>
-      
-      <div class="col-sm-4">
-        <div class="panel panel-default" id="scratchPad" ng-show="jobs.length > 0">
-          <div class="panel-heading">Scratch Pad</div>
-          <div class="panel-body">
-            <div ng-show="gettingFacts">
-              <img src="loading.gif" />
-            </div>
-            <table class="table" ng-show="selectedJob.facts.length > 0" style="text-align:left;">
-              <thead>
-                <tr>
-                  <th scope="col">Fact Name</th>
-                  <th scope="col">Fact Value</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr ng-repeat="fact in selectedJob.facts | orderBy: 'id'" ng-hide="gettingFacts">
-                  <td><a href="#" editable-text="fact.key" onaftersave="updateFact(selectedJob, fact)">
-                    <strong>{{ fact.key }}</strong>
-                  </a></td>
-                  <td><a href="#" editable-text="fact.value" onaftersave="updateFact(selectedJob, fact)">
-                    {{ fact.value }}
-                  </a></td>
-                  <td>
-                    <button class="btn btn-sm btn-default panel" ng-click="deleteFact(selectedJob, fact)">
-                      <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <div ng-show="!selectedJob.facts || selectedJob.facts.length === 0">
-              <p>Select text from the job messages to add facts to your scratch pad</p>
-            </div>
-            <div style="margin-top:15px;" ng-show="selectedJob">
-              <button class="btn btn-sm btn-default" ng-click="addFactFromSelection(selectedJob)">
-                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-                Add Selected Text
-              </button>
-            </div>
-            <div style="margin-top:15px;" ng-show="selectedJob">
-              <button class="btn btn-sm btn-default" ng-click="addFact(selectedJob)">
-                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-                Manually Add New Fact
-              </button>
-            </div>
-          </div>
-        </div>
+      <div>
+        <portfolio theme="currentTheme" portfolio-obj="portfolio"></portfolio>
       </div>
     </div>
-    
   </body>
 </html>
