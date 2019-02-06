@@ -13,10 +13,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(async (req, res, next) => {
-  const client = new Client({
-        user: 'root',
-        password: 'i0t4*375',
-        host: 'databases.cb304s4nzrdn.us-east-2.rds.amazonaws.com',
+  const client = new Client({ // TODO: put into a parameters file
+        user: 'postgres',
+        password: 'p4ssw0rd',
+        host: 'counteroffer.me',
         port: 5432,
         database: 'counteroffer'
       });
