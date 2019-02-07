@@ -8,10 +8,6 @@ const express = require('express'),
 
 app.use('/', (req, res, next) => next(), express.static('public/co-me'));
 
-app.use('/.well-known', express.static('public/co-me/.well-known'));
-
-// setHeader('Content-type', "application/octet-stream")
-
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));

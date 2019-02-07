@@ -18,18 +18,19 @@ router.use((req, res, next) => {
 
 router.post('/session', (req, res, next) => {
   const values = req.body,
-        username = values.username,
+        email = values.email,
         password = values.password,
         hash = md5(password);
   return req.client.query({
-    text: 'select * from users where username = $1::text',
-    values: [username]
+    text: 'select * from users where email = $1::text',
+    values: [email]
   }).then((results) => {
     const user = results.rows[0],
           currentSession = user.current_session,
           passwordHash = user.hashed_password;
     if (passwordHash === hash) {
       if (currentSession) {
+        req.client.end();
         return res.json(currentSession);
       }
       const session = uuidv4();

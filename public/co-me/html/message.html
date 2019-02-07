@@ -9,7 +9,7 @@
     </div>
     <div ng-if="data.type === 'skills'">
       <span ng-show="savedEmail && job.id">{{ data.value }}</span>
-      <div ng-repeat="tag in job.tags track by $index" ng-show="!savedEmail || !job.id">
+      <div ng-repeat="tag in tagCounts" ng-show="!savedEmail || !job.id">
         <label>
           <input type="checkbox" ng-model="tag.selected" ng-change="selectTag(data, tag)">
           {{ tag.name }}

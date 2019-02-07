@@ -85,11 +85,27 @@ angular.module('counteroffer.me', ['ngCookies'])
       return $location.hash();
     };
 
-    $scope.getJobs = function(emailQuestion) {
-      var email = emailQuestion.value;
-      $cookies.put('email', email);
-      location.reload();
+    $scope.login = function(email, password) {
+      return $http.post('/session', { email, password }).then(function(response) {
+        var session = response.data;
+        $cookies.put('session', session);
+        $cookies.put('email', email);
+        location.reload();
+      }).catch(function(response) {
+        $scope.loginError = response.data;
+      });
     };
+
+    $scope.register = function(email, password) {
+      return $http.post('/user', { email, password }).then(function(response) {
+        var session = response.data;
+        $cookies.put('session', session);
+        $cookies.put('email', email);
+        location.reload();
+      }).catch(function(response) {
+        $scope.loginError = response.data;
+      });
+    }
 
     $scope.loadJobURL = function(job) {
       $location.search('job', job.id);
@@ -108,6 +124,8 @@ angular.module('counteroffer.me', ['ngCookies'])
       required: true,
       value: $scope.savedEmail || null
     };
+
+    $scope.password = '';
 
     var copyQuestion = function(question) {
       var obj = {};
@@ -185,11 +203,9 @@ angular.module('counteroffer.me', ['ngCookies'])
       } else {
         angular.extend(obj, {email: $scope.emailQuestion.value, jobs: $scope.jobs});
       }
-      return $scope.submitFunc(obj).then(function() {
+      return $scope.submitSurvey(obj).then(function() {
         $scope.state = 'ok';
-        // $scope.messages.forEach(function(msg) {
-        //   msg.value = null;
-        // });
+        location.reload();
       }).catch(function(err) {
         $scope.state = 'error';
       });
@@ -205,7 +221,6 @@ angular.module('counteroffer.me', ['ngCookies'])
 
     $scope.submitSurvey = function(obj) {
       var email = obj.email,
-          username = obj.username,
           jobs = obj.jobs,
           job = obj.job,
           saved = obj.saved;

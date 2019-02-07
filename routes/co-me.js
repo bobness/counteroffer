@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const nodemailer = require('nodemailer');
 const atob = require('atob');
+const md5 = require('md5');
+const uuidv4 = require('uuid/v4');
 
 router.get('/campaign/:campaign_hash', (req, res, next) => {
   const hash = req.params.campaign_hash,
@@ -22,6 +24,62 @@ router.use((req, res, next) => {
     path: '/usr/sbin/sendmail'
   });
   next();
+});
+
+router.post('/user', (req, res, next) => {
+  const values = req.body,
+        email = values.email,
+        password = values.password,
+        hash = md5(password);
+  return req.client.query({
+    text: 'insert into users (email, hashed_password) values ($1::text, $2::text) returning *',
+    values: [email, hash]
+  }).then((results) => {
+    const user = results.rows[0];
+    const session = uuidv4();
+    return req.client.query({
+      text: 'update users set current_session = $1::text where id = $2::bigint',
+      values: [session, user.id]
+    }).then(() => {
+      req.client.end();
+      return res.json(session);
+    }).catch((err) => {
+      req.client.end();
+      return res.json(err);
+    });
+  });
+});
+
+router.post('/session', (req, res, next) => {
+  const values = req.body,
+        email = values.email,
+        password = values.password,
+        hash = md5(password);
+  return req.client.query({
+    text: 'select * from users where email = $1::text',
+    values: [email]
+  }).then((results) => {
+    const user = results.rows[0],
+          currentSession = user.current_session,
+          passwordHash = user.hashed_password;
+    if (passwordHash === hash) {
+      if (currentSession) {
+        req.client.end();
+        return res.json(currentSession);
+      }
+      const session = uuidv4();
+      return req.client.query({
+        text: 'update users set current_session = $1::text where id = $2::bigint',
+        values: [session, user.id]
+      }).then(() => {
+        req.client.end();
+        return res.json(session);
+      });
+    } else {
+      req.client.end();
+      return res.sendStatus(403);
+    }
+  })
 });
 
 router.post('/jobs', (req, res, next) => {

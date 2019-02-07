@@ -65,12 +65,12 @@ angular.module('counteroffer.app')
 
     $scope.login = function(username, password) {
       return $http.post('/api/session', {
-        username: username,
+        email: email,
         password: password
-      }).then((response) => {
+      }).then(function(response) {
         var session = response.data;
         $cookies.put('session', session);
-        $cookies.put('username', username);
+        $cookies.put('email', email);
         location.reload();
       });
     };
