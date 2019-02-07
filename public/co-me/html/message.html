@@ -4,12 +4,12 @@
   </div>
   <div class="panel-body">
     <div ng-if="data.type === 'text'">
-      <span ng-show="savedEmail && job.id" ng-bind-html="getHTML(data.value || '(No value)')"></span>
-      <input type="text" ng-model="data.value" ng-show="!savedEmail || !job.id">
+      <span ng-show="job.id" ng-bind-html="getHTML(data.value || '(No value)')"></span>
+      <input ng-hide="job.id" type="text" ng-model="data.value" ng-show="!savedEmail || !job.id">
     </div>
     <div ng-if="data.type === 'skills'">
-      <span ng-show="savedEmail && job.id">{{ data.value }}</span>
-      <div ng-repeat="tag in tagCounts" ng-show="!savedEmail || !job.id">
+      <span ng-show="job.id">{{ data.value }}</span>
+      <div ng-repeat="tag in tagCounts" ng-hide="job.id">
         <label>
           <input type="checkbox" ng-model="tag.selected" ng-change="selectTag(data, tag)">
           {{ tag.name }}
@@ -17,8 +17,8 @@
       </div>
     </div>
     <div ng-if="data.type === 'textarea'">
-      <span ng-show="savedEmail && job.id" ng-bind-html="getHTML(data.value || '(No value)')"></span>
-      <textarea style="width:500px;height:200px;" ng-model="data.value" ng-show="!savedEmail || !job.id"></textarea>
+      <span ng-show="job.id" ng-bind-html="getHTML(data.value || '(No value)')"></span>
+      <textarea ng-hide="job.id" style="width:500px;height:200px;" ng-model="data.value"></textarea>
     </div>
   </div>
 </div>

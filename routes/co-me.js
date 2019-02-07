@@ -5,15 +5,30 @@ const atob = require('atob');
 const md5 = require('md5');
 const uuidv4 = require('uuid/v4');
 
-router.get('/campaign/:campaign_hash', (req, res, next) => {
-  const hash = req.params.campaign_hash,
-        id = atob(hash);
+router.param('campaign_hash', (req, res, next, campaign_hash) => {
+  const campaignId = atob(campaign_hash);
   return req.client.query({
     text: 'select * from campaigns where id = $1::bigint',
-    values: [id]
-  }).then((campaign) => {
-    res.json(campaign);
-  })
+    values: [campaignId]
+  }).then((result) => {
+    req.campaign = result.rows[0];
+    return req.client.query({
+      text: 'select u.* from portfolios p, users u where p.id = $1::bigint and p.user_id = u.id',
+      values: [req.campaign.portfolio_id]
+    }).then((result) => {
+      req.user = result.rows[0];
+      next();
+    });
+  }).catch((err) => {
+    req.client.end();
+    console.error(err);
+    res.sendStatus(500);
+  });
+});
+
+router.get('/campaigns/:campaign_hash', (req, res, next) => {
+  req.client.end();
+  return res.json(req.campaign);
 });
 
 let transporter;
@@ -82,41 +97,25 @@ router.post('/session', (req, res, next) => {
   })
 });
 
-router.post('/jobs', (req, res, next) => {
+router.post('/campaigns/:campaign_hash/jobs', (req, res, next) => {
   const values = req.body,
         email = values.email.toLowerCase(),
-        campaignId = atob(values.campaign),
-        username = values.username,
         jobs = values.jobs;
   return Promise.all(jobs.map((job) => {
     return req.client.query({
-      text: 'insert into jobs (email, campaign_id) values($1::text, $2::bigint) returning id',
-      values: [email, campaignId]
+      text: 'insert into jobs (email, campaign_id, survey, user_id) values($1::text, $2::bigint, $3::json[], $4::bigint) returning id',
+      values: [email, req.campaign.id, job.questions, req.user.id]
     }).then((result) => {
       const newJob = result.rows[0];
       job.id = newJob.id;
-      return job.messages.map((msg) => {
-        return Promise.all([
-          // the 'question' message
-          req.client.query({
-            text: 'insert into messages (type, value, job_id, datetime, sender) values($1::text, $2::text, $3::bigint, NOW(), $4::text)',
-            values: [msg.type, msg.text, job.id, username]
-          }),
-          // the 'answer' message
-          req.client.query({
-            text: 'insert into messages (type, value, job_id, datetime, sender) values($1::text, $2::text, $3::bigint, NOW(), $4::text)',
-            values: [msg.type, msg.value, job.id, email]
-          })
-        ]);
-      });
     });
   })).then(() => {
+    req.client.end();
     return Promise.all(jobs.filter((job) => job.id).map((job) => {
-      req.client.end();
-      const jobText = job.messages.map((msg) => `${msg.text}: ${msg.value}`).join('\n');
+      const jobText = job.questions.map((q) => `${q.text}: ${q.value}`).join('\n');
       return transporter.sendMail({
         from: 'no-reply@counteroffer.me',
-        to: 'bob@bobstark.me', // TODO: link candidates with email addresses
+        to: req.user.email,
         subject: 'New job from ' + email,
         text: `${jobText}\nView discussion: http://counteroffer.io/#!?job=${job.id}`
       });
@@ -124,13 +123,12 @@ router.post('/jobs', (req, res, next) => {
   });
 });
 
-router.get('/jobs', (req, res, next) => {
+router.get('/campaigns/:campaign_hash/jobs', (req, res, next) => {
   const email = req.query.email.toLowerCase();
-  const campaignId = atob(req.query.campaign);
   let jobs = [];
   return req.client.query({
     text: 'select * from jobs where email = $1::text and campaign_id = $2::bigint',
-    values: [email, campaignId]
+    values: [email, req.campaign.id]
   }).then((result) => {
     jobs = result.rows;
     return Promise.all(jobs.map((job) => {
@@ -148,21 +146,20 @@ router.get('/jobs', (req, res, next) => {
   })
 });
 
-router.put('/jobs/:job_id', (req, res, next) => {
+// TODO: remove if I can't find a use case?
+router.put('/campaigns/:campaign_hash/jobs/:job_id', (req, res, next) => {
   const values = req.body,
         job = values.job;
-  return Promise.all(job.messages.map((msg) => {
-    return req.client.query({
-      text: 'update messages set type = $1::text, text = $2::text, value = $3::text where id = $4::bigint',
-      values: [msg.type, msg.text, msg.value, msg.id]
-    });
-  })).then(() => {
+  return req.client.query({
+    text: 'update jobs set email = $1::text, campaign_id = $2::bigint, survey = $3::json where id = $4::bigint',
+    values: [job.email, req.campaign.id, job.questions, job.id]
+  }).then(() => {
     req.client.end();
     return res.sendStatus(200);
   });
 });
 
-router.delete('/jobs/:job_id', (req, res, next) => {
+router.delete('/campaigns/:campaign_hash/jobs/:job_id', (req, res, next) => {
   const jobID = req.params.job_id;
   return req.client.query({
     text: 'delete from messages where job_id = $1::bigint',
@@ -183,7 +180,7 @@ router.delete('/jobs/:job_id', (req, res, next) => {
   });
 });
 
-router.post('/jobs/:job_id/messages', (req, res, next) => {
+router.post('/campaigns/:campaign_hash/jobs/:job_id/messages', (req, res, next) => {
   const type = 'text',
         msg = req.body,
         email = msg.email.toLowerCase(),

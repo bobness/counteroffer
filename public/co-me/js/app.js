@@ -3,15 +3,15 @@ angular.module('counteroffer.me', ['ngCookies'])
     $scope.savedEmail = $cookies.get('email');
     var campaignHash = $location.path().substring(1);
     // $scope.jobs = [];
-    $http.get('/campaign/' + campaignHash).then(function(res) {
-      $scope.campaign = res.data.rows[0];
+    $http.get('/campaigns/' + campaignHash).then(function(res) {
+      $scope.campaign = res.data;
       var json = $scope.campaign.content;
       $scope.experiences = json.experiences;
       $scope.tagCounts = countTags(json.experiences, json.tags);
       $scope.facts = json.facts;
       $scope.questions = json.questions;
 
-      $http.get('/jobs?email=' + $scope.savedEmail + '&campaign=' + $scope.campaign.url).then(function(response) {
+      $http.get('/campaigns/' + campaignHash + '/jobs?email=' + $scope.savedEmail + '&campaign=' + $scope.campaign.url).then(function(response) {
         var data = response.data;
         if (data) {
           $scope.jobs = data;
@@ -109,9 +109,6 @@ angular.module('counteroffer.me', ['ngCookies'])
 
     $scope.loadJobURL = function(job) {
       $location.search('job', job.id);
-      if (job) {
-        $anchorScroll('survey');
-      }
       $scope.currentJob = job;
     };
 
@@ -144,15 +141,15 @@ angular.module('counteroffer.me', ['ngCookies'])
 
     $scope.deleteJob = function() {
       var index = $scope.jobs.indexOf($scope.currentJob);
-      $http.delete('/jobs/' + $scope.currentJob.id).then(function() {
+      $http.delete('/campaigns/' + campaignHash + '/jobs/' + $scope.currentJob.id).then(function() {
         $scope.jobs.splice(index, 1);
         $scope.currentJob = $scope.jobs[0];
       });
     };
 
     $scope.progress = function() {
-      if ($scope.questions) {
-        var questions = $scope.questions.concat($scope.emailQuestion);
+      if ($scope.currentJob && $scope.currentJob.questions) {
+        var questions = $scope.currentJob.questions.concat($scope.emailQuestion);
         var requiredQuestions = questions.filter(function(q) { return q.required; });
         var denominator = requiredQuestions.length;
         var numerator = requiredQuestions.filter(function(msg) {
@@ -226,28 +223,20 @@ angular.module('counteroffer.me', ['ngCookies'])
           saved = obj.saved;
       if (saved && job) {
         if (job.id) {
-          return $http.put('/jobs/' + job.id, {
+          return $http.put('/campaigns/' + campaignHash + '/jobs/' + job.id, {
             job: job
-          }).then(function() {
-            location.reload();
           });
         } else {
-          return $http.post('/jobs', {
+          return $http.post('/campaigns/' + campaignHash + '/jobs', {
             email: email,
-            username: username,
             jobs: [job]
-          }).then(function() {
-            location.reload();
           });
         }
       } else {
         $cookies.put('email', email);
-        return $http.post('/jobs', {
+        return $http.post('/campaigns/' + campaignHash + '/jobs', {
           email: email,
-          username: username,
           jobs: jobs
-        }).then(function() {
-          location.reload();
         });
       }
     };

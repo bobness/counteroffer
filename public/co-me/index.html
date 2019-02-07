@@ -146,6 +146,11 @@
                 ></message>
               </div>
               <div class="panel-body">
+                <message ng-repeat="question in currentJob.survey | orderBy: 'datetime'"
+                  tag-counts="tagCounts"
+                  data="question"
+                  job="currentJob"
+                ></message>
                 <message ng-repeat="message in currentJob.messages | orderBy: 'datetime'"
                   tag-counts="tagCounts"
                   data="message"
@@ -167,7 +172,7 @@
           </div>
           <div>
             <button class="btn btn-sm btn-default" ng-click="submit({data: data})" ng-show="currentJob && !currentJob.id">
-              <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+              <span class="glyphicon glyphicon-ok" aria-hidden="true" ng-disabled="progress() !== 100"></span>
               Submit
             </button>
           </div>
