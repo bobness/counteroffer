@@ -8,12 +8,17 @@ const express = require('express'),
 
 app.use('/', (req, res, next) => next(), express.static('public/co-me'));
 
+app.use('/.well-known', express.static('public/co-me/.well-known'));
+
+// setHeader('Content-type', "application/octet-stream")
+
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
+let client;
 app.use(async (req, res, next) => {
-  const client = new Client({ // TODO: put into a parameters file
+  client = new Client({ // TODO: put into a parameters file
         user: 'postgres',
         password: 'p4ssw0rd',
         host: 'counteroffer.me',
@@ -41,5 +46,13 @@ app.use(function(err, req, res, next) {
     error: err
   });
 });
+
+function exit() {
+  console.log('Exiting due to SIGINT');
+  client.end(); // close pg connection
+  process.exit();
+}
+
+process.on('SIGINT', exit);
 
 module.exports = app;

@@ -10,8 +10,9 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
+let client;
 app.use(async (req, res, next) => {
-  const client = new Client({ // TODO: put into a parameters file
+  client = new Client({ // TODO: put into a parameters file
         user: 'postgres',
         password: 'p4ssw0rd',
         host: 'counteroffer.io',
@@ -40,5 +41,13 @@ app.use(function(err, req, res, next) {
     error: err
   });
 });
+
+function exit() {
+  console.log('Exiting due to SIGINT');
+  client.end(); // close pg connection
+  process.exit();
+}
+
+process.on('SIGINT', exit);
 
 module.exports = app;
