@@ -1,13 +1,21 @@
 const path = require('path'),
-      http = require('http'),
+      https = require('https'),
       httpProxy = require('http-proxy'),
-      fs = require('fs');
+      fs = require('fs'),
+      tls = require('tls');
 
 const proxy = httpProxy.createProxy();
 const proxyOptions = {
   'counteroffer.me': 'http://localhost:3001',
   // 'counteroffer.app': 'http://localhost:3002', // disable until I get SSL working as .app is SSL-only
   'counteroffer.io': 'http://localhost:3002'
+};
+
+const certs = {
+  'counteroffer.me': {
+    key: fs.readFileSync(`/etc/letsencrypt/live/counteroffer.me/privkey.pem`, 'utf8'),
+    cert: fs.readFileSync(`/etc/letsencrypt/live/counteroffer.me/cert.pem`, 'utf8')
+  }
 };
 
 const parseUrlForDomain = (url) => {
@@ -21,30 +29,38 @@ const parseRefererForDomain = (referer) => {
   return match ? match[2] : null;
 };
 
-const server = http.createServer((req, res) => {
-  let proxyTarget;
+const server = https.createServer({
+  SNICallback: (hostname, cb) => {
+    let cert;
+    if (hostname === 'localhost') {
+      cert = Object.values(certs)[0];
+    } else {
+      cert = certs[hostname];
+    }
+    const ctx = tls.createSecureContext(cert);
+    cb(null, ctx);
+  }
+}, (req, res) => {
+  let hostname, proxyTarget;
   if (req.headers.host.indexOf('localhost') > -1) {
     // development
-    let domainName = parseUrlForDomain(req.url); // for the initial page load
-    if (proxyOptions[domainName]) {
-      proxyTarget = proxyOptions[domainName];
+    hostname = parseUrlForDomain(req.url); // for the initial page load
+    if (proxyOptions[hostname]) {
+      proxyTarget = proxyOptions[hostname];
       req.url = '';
     } else if (req.headers.referer) {
-      domainName = parseRefererForDomain(req.headers.referer); // for fetching resources after initial load
-      proxyTarget = proxyOptions[domainName];
+      hostname = parseRefererForDomain(req.headers.referer); // for fetching resources after initial load
+      proxyTarget = proxyOptions[hostname];
     }
   } else {
     // production
-    proxyTarget = proxyOptions[req.headers.host];
+    hostname = req.headers.host;
+    proxyTarget = proxyOptions[hostname];
   }
 
   if (proxyTarget) {
-    const privateKey = fs.readFileSync(`/etc/letsencrypt/live/${proxyTarget}/privkey.pem`, 'utf8');
-    const certificate = fs.readFileSync(`/etc/letsencrypt/live/${proxyTarget}/cert.pem`, 'utf8');
-    // const ca = fs.readFileSync('/etc/letsencrypt/live/yourdomain.com/chain.pem', 'utf8');
     proxy.web(req, res, {
-      target: proxyTarget,
-      ssl: { key: privateKey, cert: certificate }
+      target: proxyTarget
     });
   } else {
     res.writeHead(404, res.headers);

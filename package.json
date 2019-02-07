@@ -17,6 +17,7 @@
     "nodemailer": "^4.6.5",
     "nodemailer-smtp-transport": "^2.7.4",
     "pg": "^7.4.3",
+    "tls": "0.0.1",
     "uuid": "^3.2.1"
   }
 }
