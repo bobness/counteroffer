@@ -1,0 +1,21 @@
+{
+  "name": "co-me",
+  "homepage": "https://github.com/bobness/counteroffer",
+  "authors": [
+    "Bob <bob@bobstark.me>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular-cookies": "^1.7.0"
+  }
+}
