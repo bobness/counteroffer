@@ -1,12 +1,13 @@
 const path = require('path'),
       http = require('http'),
-      httpProxy = require('http-proxy');
+      httpProxy = require('http-proxy'),
+      fs = require('fs');
 
 const proxy = httpProxy.createProxy();
 const proxyOptions = {
   'counteroffer.me': 'http://localhost:3001',
-  'counteroffer.io': 'http://localhost:3002',
-//   'counteroffer.app': 'http://localhost:3002' // disable until I get SSL working as .app is SSL-only
+  // 'counteroffer.app': 'http://localhost:3002', // disable until I get SSL working as .app is SSL-only
+  'counteroffer.io': 'http://localhost:3002'
 };
 
 const parseUrlForDomain = (url) => {
@@ -21,12 +22,6 @@ const parseRefererForDomain = (referer) => {
 };
 
 const server = http.createServer((req, res) => {
-  if (req.headers.host.indexOf('portfolio.bobstark.me') > -1) {
-    res.writeHead(302, {
-      'Location': 'http://counteroffer.me/bob.stark'
-    });
-    return res.end();
-  }
   let proxyTarget;
   if (req.headers.host.indexOf('localhost') > -1) {
     // development
@@ -44,11 +39,17 @@ const server = http.createServer((req, res) => {
   }
 
   if (proxyTarget) {
-    proxy.web(req, res, { target: proxyTarget });
+    const privateKey = fs.readFileSync(`/etc/letsencrypt/live/${proxyTarget}/privkey.pem`, 'utf8');
+    const certificate = fs.readFileSync(`/etc/letsencrypt/live/${proxyTarget}/cert.pem`, 'utf8');
+    // const ca = fs.readFileSync('/etc/letsencrypt/live/yourdomain.com/chain.pem', 'utf8');
+    proxy.web(req, res, {
+      target: proxyTarget,
+      ssl: { key: privateKey, cert: certificate }
+    });
   } else {
     res.writeHead(404, res.headers);
   }
-}).listen(process.env.PORT || 80);
+}).listen(443);
 
 server.on('listening', () => {
 	console.log('Listening on ', server.address());
