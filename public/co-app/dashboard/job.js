@@ -7,12 +7,20 @@ angular.module('counteroffer.app').directive('job', [
     scope: {
       data: '=',
       jobs: '<',
-      campaignHash: '@'
+      campaignHash: '@',
+      refreshFactClasses: '&',
+      factClasses: '='
     },
     link: function(scope) {
 
       var session = $cookies.get('session');
       var email = $cookies.get('email');
+
+      scope.factsCollapsed = false;
+
+      scope.toggleFacts = function() {
+        scope.factsCollapsed = !scope.factsCollapsed;
+      };
 
       scope.newJob = {
         email: '',
@@ -73,15 +81,6 @@ angular.module('counteroffer.app').directive('job', [
         };
       };
 
-      var moveScratchPad = function() {
-        var $elem = $('.panel-heading[aria-expanded="true"');
-        var top = 15;
-        if ($elem.length === 1) {
-          top = $elem.offset().top - $("#scratchPad").parent().offset().top;
-        }
-        $('#scratchPad').css('top', top);
-      };
-
       var loadJobURL = function(job) {
         if (job) {
           return $location.search('job', job.id);
@@ -133,18 +132,7 @@ angular.module('counteroffer.app').directive('job', [
               scope.gettingFacts = false;
             });
           }));
-          scope.$watch('gettingMessages', function() {
-            if (scope.selectedJob && !scope.gettingMessages) {
-              // $('#scratchPad').hide();
-              moveScratchPad();
-              // $('#scratchPad').show();
-            }
-          });
           return $q.all(promises);
-        } else {
-          $timeout(function() {
-            moveScratchPad();
-          });
         }
       });
 
@@ -178,7 +166,8 @@ angular.module('counteroffer.app').directive('job', [
             job.facts = [];
           }
           job.facts.push(fact);
-          scope.factClasess = refreshFactClasses(scope.jobs);
+          scope.factClasess = scope.refreshFactClasses(scope.jobs);
+          scope.factsCollapsed = false;
         });
       };
 
@@ -188,7 +177,7 @@ angular.module('counteroffer.app').directive('job', [
           fact,
           { headers: { 'x-email': email, 'x-session-id': session } }
         ).then(function() {
-          scope.factClasess = refreshFactClasses(scope.jobs);
+          scope.factClasess = scope.refreshFactClasses(scope.jobs);
         });
       };
 
@@ -198,7 +187,7 @@ angular.module('counteroffer.app').directive('job', [
           { headers: { 'x-email': email, 'x-session-id': session } }
         ).then(function() {
           job.facts = job.facts.filter(function(f) { return f !== fact; });
-          scope.factClasess = refreshFactClasses(scope.jobs);
+          scope.factClasess = scope.refreshFactClasses(scope.jobs);
         });
       }
 
@@ -245,19 +234,6 @@ angular.module('counteroffer.app').directive('job', [
         }
       };
 
-      var cssClasses = [
-        'label label-primary',
-        'label label-danger',
-        'label label-success',
-        'label label-default',
-        'label label-warning'
-      ];
-      var currentCssClassIndex = 0; // for round-robin usage of classes
-
-      scope.getFactClass = function(factKey) {
-        return scope.factClasses[factKey] || 'label';
-      };
-
       var sortByKey = null;
 
       scope.sortByFactKey = function(key) {
@@ -289,6 +265,10 @@ angular.module('counteroffer.app').directive('job', [
 
       scope.displayDate = function(job) {
         return (new Date(job.latest_msg)).toLocaleDateString();
+      };
+
+      scope.getFactClass = function(factKey) {
+        return scope.factClasses[factKey] || 'label';
       };
     }
   };

@@ -117,7 +117,7 @@ angular.module('counteroffer.app').directive('portfolio',
               // scope.busy = true;
               return portfolioService.getCampaignJobs(scope.campaign.url).then(function(response) {
                 scope.jobs = response.data;
-                scope.factClasses = refreshFactClasses(scope.jobs);
+                scope.refreshFactClasses(scope.jobs);
                 var params = $location.search();
                 var jobID = Number(params.job);
                 sortByKey = params.sort;
@@ -299,8 +299,22 @@ angular.module('counteroffer.app').directive('portfolio',
           }
         };
 
-        var refreshFactClasses = function(jobs) {
-          return jobs.reduce(function(keyClasses, job) {
+        var cssClasses = [
+          'label label-primary',
+          'label label-danger',
+          'label label-success',
+          'label label-default',
+          'label label-warning'
+        ];
+        var currentCssClassIndex = 0; // for round-robin usage of classes
+        scope.factClasses = {};
+
+        scope.getFactClass = function(factKey) {
+          return scope.factClasses[factKey] || 'label';
+        };
+
+        scope.refreshFactClasses = function(jobs) {
+          var classes = jobs.reduce(function(keyClasses, job) {
             if (job.facts) {
               job.facts.map(function(fact) { return fact.key; }).forEach(function(key) {
                 if (!keyClasses[key]) {
@@ -311,6 +325,8 @@ angular.module('counteroffer.app').directive('portfolio',
             }
             return keyClasses;
           }, {});
+          scope.factClasses = classes;
+          return classes;
         };
 
         scope.isInMode = function(m) {

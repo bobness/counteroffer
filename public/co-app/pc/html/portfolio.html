@@ -17,54 +17,6 @@
         </li>
       </ul>
     </div>
-    <div class="panel panel-default" id="scratchPad" ng-show="jobs.length > 0">
-      <div class="panel-heading">Scratch Pad</div>
-      <div class="panel-body">
-        <div ng-show="gettingFacts">
-          <img src="loading.gif" />
-        </div>
-        <table class="table" ng-show="selectedJob.facts.length > 0" style="text-align:left;">
-          <thead>
-            <tr>
-              <th scope="col">Fact Name</th>
-              <th scope="col">Fact Value</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr ng-repeat="fact in selectedJob.facts | orderBy: 'id'" ng-hide="gettingFacts">
-              <td><a href="#" editable-text="fact.key" onaftersave="updateFact(selectedJob, fact)">
-                <strong>{{ fact.key }}</strong>
-              </a></td>
-              <td><a href="#" editable-text="fact.value" onaftersave="updateFact(selectedJob, fact)">
-                {{ fact.value }}
-              </a></td>
-              <td>
-                <button class="btn btn-sm btn-default panel" ng-click="deleteFact(selectedJob, fact)">
-                  <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                  Delete
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <div ng-show="!selectedJob.facts || selectedJob.facts.length === 0">
-          <p>Select text from the job messages to add facts to your scratch pad</p>
-        </div>
-        <div style="margin-top:15px;" ng-show="selectedJob">
-          <button class="btn btn-sm btn-default" ng-click="addFactFromSelection(selectedJob)">
-            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-            Add Selected Text
-          </button>
-        </div>
-        <div style="margin-top:15px;" ng-show="selectedJob">
-          <button class="btn btn-sm btn-default" ng-click="addFact(selectedJob)">
-            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-            Manually Add New Fact
-          </button>
-        </div>
-      </div>
-    </div>
 
     <div id="accordion" style="margin-top:15px;">
       <div ng-show="!jobs || jobs.length === 0">
@@ -89,7 +41,7 @@
       </div> -->
     </div>
     <div ng-repeat="job in jobs | filter: getJobFilter(showArchived) | orderBy: sortJobs() : true track by $index" ng-show="!busy" class="panel panel-default">
-      <job data="job" jobs="jobs" campaign-hash="campaign.url"></job>
+      <job data="job" jobs="jobs" campaign-hash="campaign.url" refresh-fact-classes="refreshFactClasses" fact-classes="factClasses"></job>
     </div>
   </div>
 
