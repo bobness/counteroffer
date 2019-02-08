@@ -166,7 +166,7 @@ angular.module('counteroffer.app').directive('job', [
             job.facts = [];
           }
           job.facts.push(fact);
-          scope.factClasess = scope.refreshFactClasses(scope.jobs);
+          scope.factClasses = scope.refreshFactClasses({jobs: scope.jobs });
           scope.factsCollapsed = false;
         });
       };
@@ -177,7 +177,7 @@ angular.module('counteroffer.app').directive('job', [
           fact,
           { headers: { 'x-email': email, 'x-session-id': session } }
         ).then(function() {
-          scope.factClasess = scope.refreshFactClasses(scope.jobs);
+          scope.factClasses = scope.refreshFactClasses({ jobs: scope.jobs });
         });
       };
 
@@ -187,7 +187,7 @@ angular.module('counteroffer.app').directive('job', [
           { headers: { 'x-email': email, 'x-session-id': session } }
         ).then(function() {
           job.facts = job.facts.filter(function(f) { return f !== fact; });
-          scope.factClasess = scope.refreshFactClasses(scope.jobs);
+          scope.factClasses = scope.refreshFactClasses({jobs: scope.jobs });
         });
       }
 

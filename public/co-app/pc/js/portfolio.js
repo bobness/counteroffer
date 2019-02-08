@@ -314,6 +314,7 @@ angular.module('counteroffer.app').directive('portfolio',
         };
 
         scope.refreshFactClasses = function(jobs) {
+          currentCssClassIndex = 0;
           var classes = jobs.reduce(function(keyClasses, job) {
             if (job.facts) {
               job.facts.map(function(fact) { return fact.key; }).forEach(function(key) {
