@@ -9,7 +9,7 @@ function($http, $cookies) {
     return $http.put(
       url,
       data,
-      { headers: { 'x-username': username, 'x-session-id': session } }
+      { headers: { 'x-email': email, 'x-session-id': session } }
     ).then(function(res) {
       return res.data;
     });
@@ -19,7 +19,7 @@ function($http, $cookies) {
     return $http.post(
       url,
       data,
-      { headers: { 'x-username': username, 'x-session-id': session } }
+      { headers: { 'x-email': email, 'x-session-id': session } }
     ).then(function(res) {
       return res.data;
     });
@@ -28,19 +28,19 @@ function($http, $cookies) {
   var deleteRequest = function(url) {
     return $http.delete(
       url,
-      { headers: { 'x-username': username, 'x-session-id': session } }
+      { headers: { 'x-email': email, 'x-session-id': session } }
     );
   };
 
-  const rootUrl = '/api/portfolio';
+  var rootUrl = '/api/portfolio';
 
-  const session = $cookies.get('session');
-  const username = $cookies.get('username');
+  var session = $cookies.get('session');
+  var email = $cookies.get('email');
 
   service.getPortfolio = function() {
     return $http.get(
       rootUrl,
-      { headers: { 'x-username': username, 'x-session-id': session } }
+      { headers: { 'x-email': email, 'x-session-id': session } }
     ).then(function(res) {
 	    portfolio = res.data;
       return portfolio;
@@ -192,11 +192,18 @@ function($http, $cookies) {
     var index = portfolio.themes.map(function(t) { return t.name; }).indexOf(theme.name);
     return $http.get(
       rootUrl + '/themes/' + index + '/campaign',
-      { headers: { 'x-username': username, 'x-session-id': session } }
+      { headers: { 'x-email': email, 'x-session-id': session } }
     ).then(function(res) {
       campaign = res.data;
       return campaign;
     });
+  };
+
+  service.getCampaignJobs = function(campaignHash) {
+    return $http.get(
+      '/api/campaigns/' + campaignHash + '/jobs',
+      { headers: { 'x-email': email, 'x-session-id': session } }
+    );
   };
 
   return service;

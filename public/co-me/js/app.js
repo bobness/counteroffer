@@ -1,6 +1,10 @@
 angular.module('counteroffer.me', ['ngCookies'])
   .controller('controller', ['$scope', '$http', '$location', '$cookies', function($scope, $http, $location, $cookies) {
     $scope.savedEmail = $cookies.get('email');
+    $scope.newMessage = {
+      sender: $scope.savedEmail,
+      value: ''
+    };
     var campaignHash = $location.path().substring(1);
     // $scope.jobs = [];
     $http.get('/campaigns/' + campaignHash).then(function(res) {
@@ -239,6 +243,14 @@ angular.module('counteroffer.me', ['ngCookies'])
           jobs: jobs
         });
       }
+    };
+
+    $scope.sendMessage = function(message, job) {
+      return $http.post('/campaigns/' + campaignHash + '/jobs/' + job.id + '/messages', message).then(function(response) {
+        var newMsg = response.data;
+        $scope.currentJob.messages.push(newMsg);
+        $scope.newMessage.value = '';
+      });
     };
 
   }])

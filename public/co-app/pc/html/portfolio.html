@@ -1,58 +1,72 @@
 <div>
-  <div style="text-align:center;margin:1em;">
-    <button class="btn btn-sm btn-default" style="display:inline-block;"
-      ng-if="!theme"
-      ng-click="openLinkedInModal()">
-      <span class="glyphicon glyphicon-import" aria-hidden="true"></span>
-      Import LinkedIn
-    </button>
-    <button class="btn btn-sm btn-default" style="display:inline-block;"
-      ng-if="selectedTags.length > 0"
-      ng-click="createTheme(selectedTags)">
-      <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-      Create Counteroffer
-    </button>
-    <button class="btn btn-sm btn-default" style="display:inline-block;"
-      ng-if="theme"
-      ng-click="deleteSelectedTheme()">
-      <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-      Delete Counteroffer
-    </button>
-    <button class="btn btn-sm btn-default" style="display:inline-block;"
-      ng-if="theme && !campaign"
-      ng-click="createCampaign()">
-      <span class="glyphicon glyphicon-export" aria-hidden="true"></span>
-      Publish Counteroffer
-    </button>
-    <div style="display:inline-block;" ng-if="campaign">
-      <a href="http://counteroffer.me/#!/{{campaign.url}}" target="_blank">Visit Counteroffer</a>
-    </div>
-  </div>
-
-  <div style="text-align:center;margin:1em;" ng-if="theme && campaign">
-    <ul class="nav nav-pills" style="display:inline-block;">
-      <li ng-class="{active: isInMode('edit')}">
-        <a ng-click="setMode('edit')" style="cursor:pointer;">Edit</a>
-      </li>
-      <li ng-class="{active: isInMode('jobs')}">
-        <a ng-click="setMode('jobs')" style="cursor:pointer;">Jobs</a>
-      </li>
-    </ul>
-  </div>
-
   <div ng-if="campaign && isInMode('jobs')">
-    <div style="display:block;margin:auto;">
+    <div style="float:left;margin-top:-20px;">
+      <a ng-click="setMode('')" style="cursor:pointer;">
+        <span class="glyphicon glyphicon-backward" aria-hidden="true"></span>
+        Back to edit mode
+      </a>
+    </div>
+    <div style="text-align:center;margin:20px auto;">
       <ul class="nav nav-pills" style="margin-bottom:10px;display:inline-block;">
         <li class="pill-title">Job Status:</li>
-        <li ng-class="{active: !path}">
-          <a ng-click="setPath('')" style="cursor:pointer;">Active</a>
+        <li ng-class="{active: !showArchived}">
+          <a ng-click="showArchived = false" style="cursor:pointer;">Active</a>
         </li>
-        <li ng-class="{active: path === 'archived'}">
-          <a ng-click="setPath('archived')" style="cursor:pointer;">Archived</a>
+        <li ng-class="{active: showArchived}">
+          <a ng-click="showArchived = true" style="cursor:pointer;">Archived</a>
         </li>
       </ul>
     </div>
-    <div class="col-sm-8" id="accordion" style="margin-top:15px;">
+    <div class="panel panel-default" id="scratchPad" ng-show="jobs.length > 0">
+      <div class="panel-heading">Scratch Pad</div>
+      <div class="panel-body">
+        <div ng-show="gettingFacts">
+          <img src="loading.gif" />
+        </div>
+        <table class="table" ng-show="selectedJob.facts.length > 0" style="text-align:left;">
+          <thead>
+            <tr>
+              <th scope="col">Fact Name</th>
+              <th scope="col">Fact Value</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="fact in selectedJob.facts | orderBy: 'id'" ng-hide="gettingFacts">
+              <td><a href="#" editable-text="fact.key" onaftersave="updateFact(selectedJob, fact)">
+                <strong>{{ fact.key }}</strong>
+              </a></td>
+              <td><a href="#" editable-text="fact.value" onaftersave="updateFact(selectedJob, fact)">
+                {{ fact.value }}
+              </a></td>
+              <td>
+                <button class="btn btn-sm btn-default panel" ng-click="deleteFact(selectedJob, fact)">
+                  <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                  Delete
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div ng-show="!selectedJob.facts || selectedJob.facts.length === 0">
+          <p>Select text from the job messages to add facts to your scratch pad</p>
+        </div>
+        <div style="margin-top:15px;" ng-show="selectedJob">
+          <button class="btn btn-sm btn-default" ng-click="addFactFromSelection(selectedJob)">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+            Add Selected Text
+          </button>
+        </div>
+        <div style="margin-top:15px;" ng-show="selectedJob">
+          <button class="btn btn-sm btn-default" ng-click="addFact(selectedJob)">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+            Manually Add New Fact
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="accordion" style="margin-top:15px;">
       <div ng-show="!jobs || jobs.length === 0">
         There are no jobs yet. Wait until you get an offer from a recruiter.
       </div>
@@ -64,7 +78,7 @@
           </li>
         </ul>
       </div>
-      <div style="text-align:center;margin:10px;" ng-show="!path">
+      <!-- <div style="text-align:center;margin:10px;" ng-show="!path">
         <div>
           <form><input type="text" ng-model="newJob.email" placeholder="Recruiter email">
           <button class="btn btn-sm btn-default" type="submit" ng-click="addJob(newJob)">
@@ -72,14 +86,50 @@
             Add Job
           </button></form>
         </div>
-      </div>
+      </div> -->
     </div>
-    <div ng-repeat="job in jobs | filter: getJobFilter(path === 'archived') | orderBy: sortJobs() : true track by $index" ng-show="!busy" class="panel panel-default">
-      <!-- <job data="job" -->
+    <div ng-repeat="job in jobs | filter: getJobFilter(showArchived) | orderBy: sortJobs() : true track by $index" ng-show="!busy" class="panel panel-default">
+      <job data="job" jobs="jobs" campaign-hash="campaign.url"></job>
     </div>
   </div>
 
-  <div ng-if="!theme || isInMode('edit')">
+  <div ng-if="!theme || isInMode('')">
+
+    <div style="text-align:center;margin:1em;">
+      <button class="btn btn-sm btn-default" style="display:inline-block;"
+        ng-if="!theme"
+        ng-click="openLinkedInModal()">
+        <span class="glyphicon glyphicon-import" aria-hidden="true"></span>
+        Import LinkedIn
+      </button>
+      <button class="btn btn-sm btn-default" style="display:inline-block;"
+        ng-if="selectedTags.length > 0"
+        ng-click="createTheme(selectedTags)">
+        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+        Create Portfolio
+      </button>
+      <button class="btn btn-sm btn-default" style="display:inline-block;"
+        ng-if="theme"
+        ng-click="deleteSelectedTheme()">
+        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        Delete Portfolio
+      </button>
+      <button class="btn btn-sm btn-default" style="display:inline-block;"
+        ng-if="theme && !campaign"
+        ng-click="createCampaign()">
+        <span class="glyphicon glyphicon-export" aria-hidden="true"></span>
+        Publish Portfolio
+      </button>
+      <button class="btn btn-sm btn-default" style="display:inline-block;"
+        ng-if="campaign"
+        ng-click="setMode('jobs')">
+        <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+        Jobs
+      </button>
+      <div style="display:inline-block;" ng-if="campaign">
+        <a href="https://counteroffer.me/#!/{{campaign.url}}" target="_blank">Visit Portfolio</a>
+      </div>
+    </div>
 
     <div style="max-height:300px;overflow-y:scroll;border:1px black solid;border-radius:5px;">
       <histogram

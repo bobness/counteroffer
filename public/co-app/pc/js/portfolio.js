@@ -1,5 +1,6 @@
-angular.module('counteroffer.app').directive('portfolio', ['$uibModal', '$location', 'portfolioService',
-  function($uibModal, $location, portfolioService) {
+angular.module('counteroffer.app').directive('portfolio',
+['$uibModal', '$location', '$timeout', '$http', '$anchorScroll', 'portfolioService',
+  function($uibModal, $location, $timeout, $http, $anchorScroll, portfolioService) {
     var today = new Date();
 
     var zeroPadMonth = function(month) {
@@ -27,6 +28,7 @@ angular.module('counteroffer.app').directive('portfolio', ['$uibModal', '$locati
       },
       link: function(scope) {
         scope.alerts = [];
+        scope.showArchived = false;
 
         var addAlert = function(type, msg) {
           scope.alerts.push({
@@ -107,6 +109,28 @@ angular.module('counteroffer.app').directive('portfolio', ['$uibModal', '$locati
           if (scope.theme) {
             portfolioService.getCampaign(scope.theme).then(function(campaign) {
               scope.campaign = campaign;
+              scope.selectedJob = null;
+              scope.newMessage = {
+                value: '',
+                email: scope.email
+              };
+              // scope.busy = true;
+              return portfolioService.getCampaignJobs(scope.campaign.url).then(function(response) {
+                scope.jobs = response.data;
+                scope.factClasses = refreshFactClasses(scope.jobs);
+                var params = $location.search();
+                var jobID = Number(params.job);
+                sortByKey = params.sort;
+                if (jobID) {
+                  scope.selectedJob = scope.jobs.filter(function(job) { return job.id == jobID; })[0];
+                  $timeout(function() {
+                    $(`#collapse${jobID}`).collapse('show');
+                    $anchorScroll(`heading${jobID}`);
+                  });
+                }
+              }).finally(() => {
+                // scope.busy = false;
+              });
             });
           }
         })
@@ -201,14 +225,14 @@ angular.module('counteroffer.app').directive('portfolio', ['$uibModal', '$locati
               templateUrl: PC_PREFIX + '/html/linkedin-modal.html',
               transclude: true,
               scope: scope,
-              controller: ['$scope', '$uibModalInstance', '$sce', function($scope, $uibModalInstance, $sce) {
-                $scope.title = 'LinkedIn Import';
+              controller: ['scope', '$uibModalInstance', '$sce', function(scope, $uibModalInstance, $sce) {
+                scope.title = 'LinkedIn Import';
 
-                $scope.close = function() {
+                scope.close = function() {
                   $uibModalInstance.dismiss('cancel');
                 };
 
-                $scope.uploadCSV = function() { // TODO: change to parse the "quoted descriptions" correctly
+                scope.uploadCSV = function() { // TODO: change to parse the "quoted descriptions" correctly
                   var file = document.getElementById('csvFile').files[0];
                   var reader = new FileReader();
                   reader.onload = function() {
@@ -238,9 +262,9 @@ angular.module('counteroffer.app').directive('portfolio', ['$uibModal', '$locati
                         }
                       }
                     });
-                    $scope.$applyAsync(function() {
+                    scope.$applyAsync(function() {
                       experiences.forEach(function(exp) {
-                        $scope.createExperience(exp);
+                        scope.createExperience(exp);
                       });
                     });
                   };
@@ -252,9 +276,17 @@ angular.module('counteroffer.app').directive('portfolio', ['$uibModal', '$locati
 
         scope.deleteSelectedTheme = function() {
           var name = scope.theme.name;
-          return portfolioService.deleteTheme(name).then(function() {
-            scope.portfolioObj.themes = scope.portfolioObj.themes.filter(function(theme) { return theme.name !== name; });
-            showTheme('');
+          return bootbox.confirm({
+            size: 'small',
+            message: 'Are you sure you want to delete this portfolio? All jobs associated with it will be lost, too.',
+            callback: function(result) {
+              if (result) {
+                portfolioService.deleteTheme(name).then(function() {
+                  scope.portfolioObj.themes = scope.portfolioObj.themes.filter(function(theme) { return theme.name !== name; });
+                  showTheme('');
+                });
+              }
+            }
           });
         };
 
@@ -267,12 +299,25 @@ angular.module('counteroffer.app').directive('portfolio', ['$uibModal', '$locati
           }
         };
 
-        var mode = 'edit';
+        var refreshFactClasses = function(jobs) {
+          return jobs.reduce(function(keyClasses, job) {
+            if (job.facts) {
+              job.facts.map(function(fact) { return fact.key; }).forEach(function(key) {
+                if (!keyClasses[key]) {
+                  keyClasses[key] = cssClasses[currentCssClassIndex];
+                  currentCssClassIndex = (currentCssClassIndex + 1) % cssClasses.length;
+                }
+              });
+            }
+            return keyClasses;
+          }, {});
+        };
+
         scope.isInMode = function(m) {
-          return mode === m;
+          return $location.hash() === m;
         };
         scope.setMode = function(m) {
-          mode = m;
+          $location.hash(m);
         };
       }
     }

@@ -183,13 +183,13 @@ router.delete('/campaigns/:campaign_hash/jobs/:job_id', (req, res, next) => {
 router.post('/campaigns/:campaign_hash/jobs/:job_id/messages', (req, res, next) => {
   const type = 'text',
         msg = req.body,
-        email = msg.email.toLowerCase(),
+        sender = msg.sender.toLowerCase(),
         value = msg.value,
         jobID = req.params.job_id;
   const promises = [];
   promises.push(req.client.query({
     text: 'insert into messages (type, value, job_id, datetime, sender) values ($1::text, $2::text, $3::bigint, NOW(), $4::text) returning *',
-    values: [type, value, jobID, email]
+    values: [type, value, jobID, sender]
   }));
   promises.push(req.client.query({
     text: 'update jobs set archived = $1::boolean where id = $2::bigint',
@@ -200,9 +200,9 @@ router.post('/campaigns/:campaign_hash/jobs/:job_id/messages', (req, res, next) 
     const msg = results[0].rows[0];
     return transporter.sendMail({
       from: 'no-reply@counteroffer.me',
-      to: 'bob@bobstark.me', // TODO: link candidates with email addresses
+      to: req.user.email,
       subject: 'New message from ' + msg.sender,
-      text: `${msg.value}\nView discussion: http://counteroffer.io/#!?job=${jobID}`
+      text: `${msg.value}\nView discussion: http://counteroffer.io/#!/${req.campaign.theme_name}?job=${jobID}#jobs`
     }).then(() => {
       return res.json(msg);
     });

@@ -34,36 +34,13 @@ angular.module('counteroffer.app')
       $scope.currentTheme = getSelectedTheme();
     };
 
-    var username = $cookies.get('username'),
-        session = $cookies.get('session');
-    if (username && session) {
-      $scope.selectedJob = null;
-      $scope.newMessage = {
-        value: '',
-        username: username
-      };
-      $scope.busy = true;
-      // $http.get('/jobs').then(function(response) {
-      //   $scope.jobs = response.data;
-      //   $scope.factClasses = refreshFactClasses($scope.jobs);
-      //   var params = $location.search();
-      //   var jobID = Number(params.job);
-      //   sortByKey = params.sort;
-      //   if (jobID) {
-      //     $scope.selectedJob = $scope.jobs.filter(function(job) { return job.id == jobID; })[0];
-      //     $timeout(function() {
-      //       $(`#collapse${jobID}`).collapse('show');
-      //       $anchorScroll(`heading${jobID}`);
-      //     });
-      //   }
-      // }).finally(() => {
-      //   $scope.busy = false;
-      // });
-    } else {
+    $scope.email = $cookies.get('email');
+    $scope.session = $cookies.get('session');
+    if (!$scope.email || !$scope.session) {
       $scope.notLoggedIn = true;
     }
 
-    $scope.login = function(username, password) {
+    $scope.login = function(email, password) {
       return $http.post('/api/session', {
         email: email,
         password: password

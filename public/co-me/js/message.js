@@ -46,14 +46,6 @@ angular.module('counteroffer.me').directive('message', ['$sce', function($sce) {
         }
         return 'panel-primary';
       };
-
-      scope.sendMessage = function(message, job) {
-        return $http.post('/jobs/' + job.id + '/messages', message).then(function(response) {
-          var newMsg = response.data;
-          scope.currentJob.messages.push(newMsg);
-          scope.newMessage.value = '';
-        });
-      };
     }
   }
 }]);

@@ -5,13 +5,10 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
-
-    <!-- build:css -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
     <link href="bower_components/angular-xeditable/dist/css/xeditable.css" rel="stylesheet">
     <link rel="stylesheet" href="pc/bower_components/ng-tags-input/ng-tags-input.css">
-    <!-- endbuild -->
 
     <link rel="stylesheet" href="../style.css" />
     <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon" />
@@ -21,7 +18,8 @@
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="bower_components/angular/angular.min.js"></script>
     <script src="bower_components/angular-cookies/angular-cookies.min.js"></script>
-    <!-- <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script> -->
+    <script src="bower_components/bootbox.js/bootbox.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <script src="pc/bower_components/angular-resource/angular-resource.min.js"></script>
     <script src="pc/bower_components/angular-sanitize/angular-sanitize.min.js"></script>
     <script src="pc/bower_components/angular-xeditable/dist/js/xeditable.min.js"></script>
@@ -35,21 +33,22 @@
     <script src="pc/js/histogram.js"></script>
     <script src="pc/js/survey.js"></script>
     <script src="pc/js/portfolio.js"></script>
+    <script src="dashboard/job.js"></script>
     <script src="mainController.js"></script>
   </head>
   <body ng-app="counteroffer.app" ng-controller="mainController" style="height:100%;">
     <div ng-if="notLoggedIn" style="margin:0 auto;width:300px;">
       <form>
-        <p>Username: <input type="text" ng-model="username"></p>
+        <p>Email: <input type="text" ng-model="email"></p>
         <p>Password: <input type="password" ng-model="password"></p>
-        <p style="text-align:center;"><button type="submit" class="btn btn-sm btn-default" ng-click="login(username, password)">Login</button></p>
+        <p style="text-align:center;"><button type="submit" class="btn btn-sm btn-default" ng-click="login(email, password)">Login</button></p>
       </form>
     </div>
     <div ng-if="!notLoggedIn">
-      <h3 style="text-align:center;">Bob Stark</h3>
+      <h3 style="text-align:center;">{{ email }}</h3>
       <div style="text-align:center;margin:20px auto;border-bottom:1px black solid;">
         <ul class="nav nav-pills" style="display:inline-block;">
-          <li class="pill-title">Counteroffers:</li>
+          <li class="pill-title">Portfolios:</li>
           <li ng-class="{active: !themeIsSelected()}">
             <a ng-click="showTheme('')" style="cursor:pointer;">Base</a>
           </li>

@@ -18,6 +18,7 @@
   "dependencies": {
     "angular-xeditable": "^0.8.1",
     "angular": "1.7",
-    "angular-cookies": "^1.7.0"
+    "angular-cookies": "^1.7.0",
+    "bootbox.js": "bootbox#^4.4.0"
   }
 }
