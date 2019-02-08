@@ -10,10 +10,10 @@
       <ul class="nav nav-pills" style="margin-bottom:10px;display:inline-block;">
         <li class="pill-title">Job Status:</li>
         <li ng-class="{active: !showArchived}">
-          <a ng-click="showArchived = false" style="cursor:pointer;">Active</a>
+          <a ng-click="setShowArchived(false)" style="cursor:pointer;">Active</a>
         </li>
         <li ng-class="{active: showArchived}">
-          <a ng-click="showArchived = true" style="cursor:pointer;">Archived</a>
+          <a ng-click="setShowArchived(true)" style="cursor:pointer;">Archived</a>
         </li>
       </ul>
     </div>

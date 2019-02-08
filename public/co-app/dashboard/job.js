@@ -75,19 +75,6 @@ angular.module('counteroffer.app').directive('job', [
         });
       };
 
-      scope.getJobFilter = function(archiveValue) {
-        return function(job) {
-          return job.archived === archiveValue;
-        };
-      };
-
-      var loadJobURL = function(job) {
-        if (job) {
-          return $location.search('job', job.id);
-        }
-        return $location.search('');
-      };
-
       scope.toggleJob = function(job) {
         $timeout(function() {
           scope.jobs.forEach(function(job2) {

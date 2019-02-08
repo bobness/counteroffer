@@ -30,6 +30,23 @@ angular.module('counteroffer.app').directive('portfolio',
         scope.alerts = [];
         scope.showArchived = false;
 
+        scope.setShowArchived = function(val) {
+          scope.showArchived = val;
+        };
+
+        scope.getJobFilter = function(archiveValue) {
+          return function(job) {
+            return job.archived === archiveValue;
+          };
+        };
+
+        var loadJobURL = function(job) {
+          if (job) {
+            return $location.search('job', job.id);
+          }
+          return $location.search('');
+        };
+
         var addAlert = function(type, msg) {
           scope.alerts.push({
             type: type,
