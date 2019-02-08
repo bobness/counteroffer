@@ -7,12 +7,12 @@ const uuidv4 = require('uuid/v4');
 
 router.param('campaign_hash', (req, res, next, campaign_hash) => {
   const campaignId = atob(campaign_hash);
-  return req.client.query({
+  return req.pool.query({
     text: 'select * from campaigns where id = $1::bigint',
     values: [campaignId]
   }).then((result) => {
     req.campaign = result.rows[0];
-    return req.client.query({
+    return req.pool.query({
       text: 'select u.* from portfolios p, users u where p.id = $1::bigint and p.user_id = u.id',
       values: [req.campaign.portfolio_id]
     }).then((result) => {
@@ -20,14 +20,12 @@ router.param('campaign_hash', (req, res, next, campaign_hash) => {
       next();
     });
   }).catch((err) => {
-    req.client.end();
     console.error(err);
     res.sendStatus(500);
   });
 });
 
 router.get('/campaigns/:campaign_hash', (req, res, next) => {
-  req.client.end();
   return res.json(req.campaign);
 });
 
@@ -46,20 +44,18 @@ router.post('/user', (req, res, next) => {
         email = values.email,
         password = values.password,
         hash = md5(password);
-  return req.client.query({
+  return req.pool.query({
     text: 'insert into users (email, hashed_password) values ($1::text, $2::text) returning *',
     values: [email, hash]
   }).then((results) => {
     const user = results.rows[0];
     const session = uuidv4();
-    return req.client.query({
+    return req.pool.query({
       text: 'update users set current_session = $1::text where id = $2::bigint',
       values: [session, user.id]
     }).then(() => {
-      req.client.end();
       return res.json(session);
     }).catch((err) => {
-      req.client.end();
       return res.json(err);
     });
   });
@@ -70,7 +66,7 @@ router.post('/session', (req, res, next) => {
         email = values.email,
         password = values.password,
         hash = md5(password);
-  return req.client.query({
+  return req.pool.query({
     text: 'select * from users where email = $1::text',
     values: [email]
   }).then((results) => {
@@ -79,19 +75,16 @@ router.post('/session', (req, res, next) => {
           passwordHash = user.hashed_password;
     if (passwordHash === hash) {
       if (currentSession) {
-        req.client.end();
         return res.json(currentSession);
       }
       const session = uuidv4();
-      return req.client.query({
+      return req.pool.query({
         text: 'update users set current_session = $1::text where id = $2::bigint',
         values: [session, user.id]
       }).then(() => {
-        req.client.end();
         return res.json(session);
       });
     } else {
-      req.client.end();
       return res.sendStatus(403);
     }
   })
@@ -102,7 +95,7 @@ router.post('/campaigns/:campaign_hash/jobs', (req, res, next) => {
         email = values.email.toLowerCase(),
         jobs = values.jobs;
   return Promise.all(jobs.map((job) => {
-    return req.client.query({
+    return req.pool.query({
       text: 'insert into jobs (email, campaign_id, survey, user_id) values($1::text, $2::bigint, $3::json[], $4::bigint) returning id',
       values: [email, req.campaign.id, job.questions, req.user.id]
     }).then((result) => {
@@ -110,7 +103,6 @@ router.post('/campaigns/:campaign_hash/jobs', (req, res, next) => {
       job.id = newJob.id;
     });
   })).then(() => {
-    req.client.end();
     return Promise.all(jobs.filter((job) => job.id).map((job) => {
       const jobText = job.questions.map((q) => `${q.text}: ${q.value}`).join('\n');
       return transporter.sendMail({
@@ -126,13 +118,13 @@ router.post('/campaigns/:campaign_hash/jobs', (req, res, next) => {
 router.get('/campaigns/:campaign_hash/jobs', (req, res, next) => {
   const email = req.query.email.toLowerCase();
   let jobs = [];
-  return req.client.query({
+  return req.pool.query({
     text: 'select * from jobs where email = $1::text and campaign_id = $2::bigint',
     values: [email, req.campaign.id]
   }).then((result) => {
     jobs = result.rows;
     return Promise.all(jobs.map((job) => {
-      return req.client.query({
+      return req.pool.query({
         text: 'select * from messages where job_id = $1::bigint',
         values: [job.id]
       }).then((result) => {
@@ -141,7 +133,6 @@ router.get('/campaigns/:campaign_hash/jobs', (req, res, next) => {
       });
     }));
   }).then(() => {
-    req.client.end();
     return res.json(jobs);
   })
 });
@@ -150,32 +141,30 @@ router.get('/campaigns/:campaign_hash/jobs', (req, res, next) => {
 router.put('/campaigns/:campaign_hash/jobs/:job_id', (req, res, next) => {
   const values = req.body,
         job = values.job;
-  return req.client.query({
+  return req.pool.query({
     text: 'update jobs set email = $1::text, campaign_id = $2::bigint, survey = $3::json where id = $4::bigint',
     values: [job.email, req.campaign.id, job.questions, job.id]
   }).then(() => {
-    req.client.end();
     return res.sendStatus(200);
   });
 });
 
 router.delete('/campaigns/:campaign_hash/jobs/:job_id', (req, res, next) => {
   const jobID = req.params.job_id;
-  return req.client.query({
+  return req.pool.query({
     text: 'delete from messages where job_id = $1::bigint',
     values: [jobID]
   }).then(() => {
-    return req.client.query({
+    return req.pool.query({
       text: 'delete from facts where job_id = $1::bigint',
       values: [jobID]
     });
   }).then(() => {
-    return req.client.query({
+    return req.pool.query({
       text: 'delete from jobs where id = $1::bigint',
       values: [jobID]
     });
   }).then(() => {
-    req.client.end();
     return res.sendStatus(200);
   });
 });
@@ -187,16 +176,15 @@ router.post('/campaigns/:campaign_hash/jobs/:job_id/messages', (req, res, next) 
         value = msg.value,
         jobID = req.params.job_id;
   const promises = [];
-  promises.push(req.client.query({
+  promises.push(req.pool.query({
     text: 'insert into messages (type, value, job_id, datetime, sender) values ($1::text, $2::text, $3::bigint, NOW(), $4::text) returning *',
     values: [type, value, jobID, sender]
   }));
-  promises.push(req.client.query({
+  promises.push(req.pool.query({
     text: 'update jobs set archived = $1::boolean where id = $2::bigint',
     values: [false, jobID]
   }));
   Promise.all(promises).then((results) => {
-    req.client.end();
     const msg = results[0].rows[0];
     return transporter.sendMail({
       from: 'no-reply@counteroffer.me',

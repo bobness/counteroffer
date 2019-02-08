@@ -17,8 +17,6 @@ class Portfolio {
     return this.client.query({
       text: 'update portfolios set json = $1::json where id = $2::bigint',
       values: [obj, this.id]
-    }).then(() => {
-      this.client.end();
     });
   }
 
@@ -140,7 +138,6 @@ class Portfolio {
         text: 'update campaigns set url = $1::text where id = $2::bigint',
         values: [campaign.url, campaign.id]
       }).then(() => {
-        this.client.end();
         return campaign;
       });
     });
@@ -152,7 +149,6 @@ class Portfolio {
       values: [this.id, theme.name]
     }).then((result) => {
       const campaign = result.rows[0];
-      this.client.end();
       return campaign;
     });
   }

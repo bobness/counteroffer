@@ -4,23 +4,23 @@ const express = require('express'),
       bodyParser = require('body-parser'),
       app = express(),
       http = require('http'),
-      { Client } = require('pg');
+      { Pool } = require('pg');
 
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-let client;
+const pool = new Pool({ // TODO: put into a parameters file
+  user: 'postgres',
+  password: 'p4ssw0rd',
+  host: 'counteroffer.me',
+  port: 5432,
+  database: 'counteroffer',
+  max: 50
+});
+
 app.use(async (req, res, next) => {
-  client = new Client({ // TODO: put into a parameters file
-        user: 'postgres',
-        password: 'p4ssw0rd',
-        host: 'counteroffer.io',
-        port: 5432,
-        database: 'counteroffer'
-      });
-  await client.connect();
-  req.client = client;
+  req.pool = pool;
   next();
 });
 
@@ -42,12 +42,15 @@ app.use(function(err, req, res, next) {
   });
 });
 
-function exit() {
-  console.log('Exiting due to SIGINT');
-  client.end(); // close pg connection
+async function exit() {
+  console.log('Exiting and cleaning up PG pool...');
+  await pool.end();
+  console.log('Done. Exiting.');
   process.exit();
 }
 
+// process.on('exit', exit);
 process.on('SIGINT', exit);
+process.on('SIGTERM', exit);
 
 module.exports = app;
