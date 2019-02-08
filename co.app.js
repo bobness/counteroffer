@@ -16,7 +16,7 @@ const pool = new Pool({ // TODO: put into a parameters file
   host: 'counteroffer.me',
   port: 5432,
   database: 'counteroffer',
-  max: 50
+  max: 20
 });
 
 app.use(async (req, res, next) => {
