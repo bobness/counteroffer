@@ -232,7 +232,7 @@ angular.module('counteroffer.app').directive('job', [
       };
 
       scope.getMessageStyle = function(job, sender) {
-        if (sender === job.email) { // recruiter: align left
+        if (sender === job.email || !sender) { // recruiter || survey: align left
           return {
             'text-align': 'left',
             'padding': '5px'

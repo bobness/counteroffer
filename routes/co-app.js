@@ -174,7 +174,7 @@ router.post('/campaigns/:campaign_hash/jobs/:job_id/messages', (req, res, next) 
   if (value) {
     promises.push(req.pool.query({
       text: 'insert into messages (type, value, job_id, datetime, sender) values ($1::text, $2::text, $3::bigint, NOW(), $4::text) returning *',
-      values: [type, value, jobID, email]
+      values: [type, value, jobID, userEmail]
     }));
   }
   if (archive) {
