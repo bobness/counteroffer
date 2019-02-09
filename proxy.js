@@ -16,6 +16,10 @@ const certs = {
   'counteroffer.me': {
     key: fs.readFileSync(`/etc/letsencrypt/live/counteroffer.me/privkey.pem`, 'utf8'),
     cert: fs.readFileSync(`/etc/letsencrypt/live/counteroffer.me/cert.pem`, 'utf8')
+  },
+  'counteroffer.io': {
+    key: fs.readFileSync(`/etc/letsencrypt/live/counteroffer.io/privkey.pem`, 'utf8'),
+    cert: fs.readFileSync(`/etc/letsencrypt/live/counteroffer.io/cert.pem`, 'utf8')
   }
 };
 
