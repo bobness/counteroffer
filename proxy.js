@@ -1,4 +1,5 @@
 const path = require('path'),
+      http = require('http'),
       https = require('https'),
       httpProxy = require('http-proxy'),
       fs = require('fs'),
@@ -29,18 +30,7 @@ const parseRefererForDomain = (referer) => {
   return match ? match[2] : null;
 };
 
-const server = https.createServer({
-  SNICallback: (hostname, cb) => {
-    let cert;
-    if (hostname === 'localhost') {
-      cert = Object.values(certs)[0];
-    } else {
-      cert = certs[hostname];
-    }
-    const ctx = tls.createSecureContext(cert);
-    cb(null, ctx);
-  }
-}, (req, res) => {
+const serveFunction = (req, res) => {
   let hostname, proxyTarget;
   if (req.headers.host.indexOf('localhost') > -1) {
     // development
@@ -58,6 +48,8 @@ const server = https.createServer({
     proxyTarget = proxyOptions[hostname];
   }
 
+  console.log('proxyTarget: ', proxyTarget);
+
   if (proxyTarget) {
     proxy.web(req, res, {
       target: proxyTarget
@@ -65,8 +57,30 @@ const server = https.createServer({
   } else {
     res.writeHead(404, res.headers);
   }
-}).listen(443);
+};
 
-server.on('listening', () => {
-	console.log('Listening on ', server.address());
+const httpServer = http.createServer((req, res) => {
+  res.writeHead(301, { "Location": "https://" + req.headers['host'] + req.url });
+  res.end();
+}).listen(80);
+
+httpServer.on('listening', () => {
+	console.log('Listening on ', httpServer.address());
+});
+
+const httpsServer = https.createServer({
+  SNICallback: (hostname, cb) => {
+    let cert;
+    if (hostname === 'localhost') {
+      cert = Object.values(certs)[0];
+    } else {
+      cert = certs[hostname];
+    }
+    const ctx = tls.createSecureContext(cert);
+    cb(null, ctx);
+  }
+}, serveFunction).listen(443);
+
+httpsServer.on('listening', () => {
+	console.log('Listening on ', httpsServer.address());
 });
