@@ -26,7 +26,7 @@
   </head>
   <body ng-app="counteroffer.me" ng-controller="controller">
 
-    <div style="text-align:center;margin:1em" id="navLinks">
+    <div style="text-align:center;margin:1em" id="navLinks" ng-if="getCurrentPage() !== 'simple'">
       <ul class="nav nav-pills" style="display:inline-block;">
         <li ng-class="{active: !getCurrentPage()}">
           <a ng-click="goToPage('')" style="cursor:pointer;">Experiences</a>
@@ -40,13 +40,13 @@
       </ul>
     </div>
 
-    <p ng-show="getCurrentPage() === 'print'">
+    <p ng-if="getCurrentPage() === 'print'">
       Check items you'd like to include in a printed (or printed-to-PDF) version of this portfolio.
     </p>
 
     <div style="text-align:center;" ng-if="getCurrentPage() !== 'contact'">
       <!-- <h1>Bob Stark</h1> TODO: get their name -->
-      <div>
+      <div ng-if="getCurrentPage() !== 'simple'">
         <table id="facts" class="table table-striped table-bordered" style="text-align:left;">
           <tbody>
             <tr ng-repeat="fact in facts track by $index" ng-init="showObj = {print: false}" ng-class="{hideFromPrint: !showObj.print}">
@@ -66,7 +66,7 @@
       </div>
 
       <div style="text-align:left;max-height:300px;overflow-y:scroll;border:1px black solid;border-radius:5px;">
-        <histogram ng-show="getCurrentPage() !== 'print'"
+        <histogram ng-if="getCurrentPage() !== 'print'"
           tag-counts="tagCounts"
           set-filter="setFilter(func)"
           get-experiences="getExperiences()"
