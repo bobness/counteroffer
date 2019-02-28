@@ -67,10 +67,10 @@
         Delete Portfolio
       </button>
       <button class="btn btn-sm btn-default" style="display:inline-block;"
-        ng-if="theme && !campaign"
+        ng-if="theme"
         ng-click="createCampaign()">
         <span class="glyphicon glyphicon-export" aria-hidden="true"></span>
-        Publish Portfolio
+        <span ng-if="campaign">Re-</span>Publish Portfolio
       </button>
       <button class="btn btn-sm btn-default" style="display:inline-block;"
         ng-if="campaign"
