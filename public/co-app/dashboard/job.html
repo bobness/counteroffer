@@ -58,12 +58,12 @@
     <div class="panel-body" ng-hide="gettingMessages">
       <ul class="list-unstyled" style="clear:both;">
         <li ng-repeat="question in data.survey | orderBy: 'datetime'" ng-style="getMessageStyle(data, question.sender)">
-          <strong>{{ question.text }}</strong> <span class="message" ng-bind-html="getHTML(question.value || '(No reply)')"></span>
+          <strong>{{ question.text }}</strong> <span ng-bind-html="getHTML(question.value || '(No reply)')"></span>
         </li>
       </ul>
       <ul class="list-unstyled" style="clear:both;">
         <li ng-repeat="message in data.messages | orderBy: 'datetime'" ng-style="getMessageStyle(data, message.sender)">
-          <span class="message" ng-bind-html="getHTML(message.value || '(No reply)')"></span>
+          <span class="message" ng-class="getMessageClass(data, message.sender)" ng-bind-html="getHTML(message.value || '(No reply)')"></span>
         </li>
       </ul>
       <div style="height:100px;margin:10px;" ng-show="!data.archived">

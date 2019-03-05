@@ -78,9 +78,14 @@ body {
 }
 
 .message {
-  background-color: #eee;
   padding: 3px;
-  border-radius: 3px;
+  border-radius: 5px;
+}
+.message.candidate {
+  background-color: #add8e6;
+}
+.message.recruiter {
+  background-color: #eee;
 }
 
 .tag-list {

@@ -75,6 +75,13 @@ angular.module('counteroffer.app').directive('job', [
         });
       };
 
+      var loadJobURL = function(job) {
+        if (job) {
+          return $location.search('job', job.id);
+        }
+        return $location.search('');
+      };
+
       scope.toggleJob = function(job) {
         $timeout(function() {
           scope.jobs.forEach(function(job2) {
@@ -220,6 +227,14 @@ angular.module('counteroffer.app').directive('job', [
           };
         }
       };
+
+      scope.getMessageClass = function(job, sender) {
+        if (sender === job.email || !sender) {
+          return 'recruiter';
+        } else {
+          return 'candidate';
+        }
+      }
 
       var sortByKey = null;
 

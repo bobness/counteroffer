@@ -40,13 +40,6 @@ angular.module('counteroffer.app').directive('portfolio',
           };
         };
 
-        var loadJobURL = function(job) {
-          if (job) {
-            return $location.search('job', job.id);
-          }
-          return $location.search('');
-        };
-
         var addAlert = function(type, msg) {
           scope.alerts.push({
             type: type,
