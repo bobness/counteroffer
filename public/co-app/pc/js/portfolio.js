@@ -131,13 +131,6 @@ angular.module('counteroffer.app').directive('portfolio',
                 var params = $location.search();
                 var jobID = Number(params.job);
                 sortByKey = params.sort;
-                if (jobID) {
-                  scope.selectedJob = scope.jobs.filter(function(job) { return job.id == jobID; })[0];
-                  $timeout(function() {
-                    $(`#collapse${jobID}`).collapse('show');
-                    $anchorScroll(`heading${jobID}`);
-                  });
-                }
               }).finally(() => {
                 // scope.busy = false;
               });
@@ -346,6 +339,10 @@ angular.module('counteroffer.app').directive('portfolio',
         scope.setMode = function(m) {
           $location.hash(m);
         };
+
+        if ($location.search().job) {
+          scope.setMode('jobs');
+        }
       }
     }
   }

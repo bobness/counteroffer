@@ -41,7 +41,7 @@
       </div> -->
     </div>
     <div ng-repeat="job in jobs | filter: getJobFilter(showArchived) | orderBy: sortJobs() : true track by $index" ng-show="!busy" class="panel panel-default">
-      <job data="job" jobs="jobs" campaign-hash="campaign.url" refresh-fact-classes="refreshFactClasses(jobs)" fact-classes="factClasses"></job>
+      <job data="job" jobs="jobs" campaign-hash="{{ campaign.url }}" refresh-fact-classes="refreshFactClasses(jobs)" fact-classes="factClasses"></job>
     </div>
   </div>
 

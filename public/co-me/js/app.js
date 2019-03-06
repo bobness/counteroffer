@@ -25,6 +25,7 @@ angular.module('counteroffer.me', ['ngCookies'])
           var jobID = Number($location.search().job);
           if (jobID) {
             $scope.currentJob = $scope.jobs.filter(function(job) { return job.id == jobID; })[0];
+            $location.hash('contact');
           } else {
             $scope.currentJob = $scope.jobs[0];
           }

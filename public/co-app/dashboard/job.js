@@ -272,6 +272,16 @@ angular.module('counteroffer.app').directive('job', [
       scope.getFactClass = function(factKey) {
         return scope.factClasses[factKey] || 'label';
       };
+
+      var jobInURL = $location.search().job;
+      if (jobInURL && scope.data && jobInURL === scope.data.id) {
+        $timeout(function() {
+          scope.selectedJob = scope.data;
+          scope.selectedJob.selected = true;
+          $(`#collapse${scope.selectedJob.id}`).collapse('show');
+          $anchorScroll(`heading${scope.selectedJob.id}`); // FIXME: not working
+        });
+      }
     }
   };
 }]);

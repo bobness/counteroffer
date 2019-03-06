@@ -3,16 +3,19 @@ const router = express.Router();
 const md5 = require('md5');
 const uuidv4 = require('uuid/v4');
 const nodemailer = require('nodemailer');
+const aws = require('aws-sdk');
 const atob = require('atob');
 
 const Portfolio = require('./portfolio')
 
+aws.config.loadFromPath('./aws-config.json');
+
 let transporter;
 router.use((req, res, next) => {
   transporter = nodemailer.createTransport({
-    sendmail: true,
-    newline: 'unix',
-    path: '/usr/sbin/sendmail'
+    SES: new aws.SES({
+      apiVersion: '2010-12-01'
+    })
   });
   next();
 });
@@ -155,7 +158,7 @@ router.delete('/campaigns/:campaign_hash/jobs/:job_id', (req, res, next) => {
   }).then(() => {
     return req.pool.query({
       text: 'delete from jobs where id = $1::bigint',
-      values: [req.userId, jobID]
+      values: [jobID]
     });
   }).then(() => {
     return res.sendStatus(200);
@@ -186,11 +189,12 @@ router.post('/campaigns/:campaign_hash/jobs/:job_id/messages', (req, res, next) 
   Promise.all(promises).then((results) => {
     const msg = results[0].rows[0];
     if (msg) {
+      const url = 'http://counteroffer.me/#!/' + encodeURIComponent(req.campaignHash) + `?job=${jobID}`;
       return transporter.sendMail({
         from: 'no-reply@counteroffer.me',
         to: recruiterEmail,
         subject: 'New message from ' + userEmail,
-        text: `${msg.value}\nView discussion: http://counteroffer.me/#!/${req.campaignHash}?job=${jobID}#contact`
+        text: `${msg.value}\n\nView discussion: ${url}`
       }).then(() => {
         return res.json(msg);
       });

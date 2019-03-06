@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const nodemailer = require('nodemailer');
+const aws = require('aws-sdk');
 const atob = require('atob');
 const md5 = require('md5');
 const uuidv4 = require('uuid/v4');
@@ -29,12 +30,14 @@ router.get('/campaigns/:campaign_hash', (req, res, next) => {
   return res.json(req.campaign);
 });
 
+aws.config.loadFromPath('./aws-config.json');
+
 let transporter;
 router.use((req, res, next) => {
   transporter = nodemailer.createTransport({
-    sendmail: true,
-    newline: 'unix',
-    path: '/usr/sbin/sendmail'
+    SES: new aws.SES({
+      apiVersion: '2010-12-01'
+    })
   });
   next();
 });
@@ -186,14 +189,17 @@ router.post('/campaigns/:campaign_hash/jobs/:job_id/messages', (req, res, next) 
   }));
   Promise.all(promises).then((results) => {
     const msg = results[0].rows[0];
-    return transporter.sendMail({
-      from: 'no-reply@counteroffer.me',
-      to: req.user.email,
-      subject: 'New message from ' + msg.sender,
-      text: `${msg.value}\nView discussion: http://counteroffer.io/#!/${req.campaign.theme_name}?job=${jobID}#jobs`
-    }).then(() => {
-      return res.json(msg);
-    });
+    if (msg) {
+      const url = 'http://counteroffer.io/#!/' + encodeURIComponent(req.campaign.theme_name) + `?job=${jobID}`;
+      return transporter.sendMail({
+        from: 'no-reply@counteroffer.me',
+        to: req.user.email,
+        subject: 'New message from ' + msg.sender,
+        text: `${msg.value}\n\nView discussion: ${url}`
+      }).then(() => {
+        return res.json(msg);
+      });
+    }
   });
 });
 
