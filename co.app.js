@@ -14,6 +14,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(async (req, res, next) => {
+  // TODO: store secrets somewhere secure
   const client = new Client({
     user: 'postgres',
     password: 'p4ssw0rd',
