@@ -19,5 +19,8 @@
     "angular-xeditable": "^0.8.1",
     "angular": "1.6",
     "angular-cookies": "^1.7.0"
+  },
+  "resolutions": {
+    "angular": "1.8.2"
   }
 }

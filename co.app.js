@@ -6,6 +6,7 @@ const express = require('express'),
       http = require('http'),
       { Client } = require('pg');
 
+console.log('*** co.app.js accessed');
 app.use('/', (req, res, next) => next(), express.static('public/co-app'));
 
 app.use(logger('dev'));
@@ -14,19 +15,23 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(async (req, res, next) => {
   const client = new Client({
-        user: 'root',
-        password: 'i0t4*375',
-        host: 'databases.cb304s4nzrdn.us-east-2.rds.amazonaws.com',
-        port: 5432,
-        database: 'counteroffer'
-      });
-  await client.connect();
+    user: 'postgres',
+    password: 'p4ssw0rd',
+    host: 'aws.datagotchi.net',
+    port: 5432,
+    database: 'counteroffer'
+  });
+  console.log('*** connecting to postgres client...');
+  await client.connect(); // FIXME: not connecting to the db
+  console.log('*** postgres client connected');
   req.client = client;
   next();
 });
 
 const index = require('./routes/co-app');
 app.use('/', index);
+
+console.log('*** routes added');
 
 const server = http.createServer(app);
 server.listen(process.env.PORT || 3002);
